@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://www.linkedin.com/in/kiran-d-9605772a4/" title="Kiran D on LinkedIn"><img src="assets/hero.svg" width="100%" title="Kiran D, AI/ML engineer at NXL Technologies, Kochi" alt="Kiran D, AI/ML engineer. I build multi-agent systems and RAG pipelines that hold up in production. Junior AI Developer at NXL Technologies, Kochi." /></a>
+  <a href="https://www.linkedin.com/in/kiran-d-9605772a4/" title="Kiran D on LinkedIn"><img src="assets/hero.svg" width="100%" title="Kiran D, Forward Deployed Engineer and AI/ML engineer at NXL Technologies, Kochi" alt="Kiran D, Forward Deployed Engineer and AI/ML engineer. I build multi-agent systems and RAG pipelines that hold up in production. Junior AI Developer at NXL Technologies, Kochi." /></a>
 </p>
 
 <p align="center">
@@ -33,10 +33,8 @@
   <img src="assets/card-fed.svg" width="49%" title="FedLiteLLMGuard: research project, 2025" alt="FedLiteLLMGuard: federated TinyBERT that detects rare attacks on 5G networks." />
 </p>
 
-<div align="center">
-<details>
-<summary><picture><img src="assets/btn-fullstack.svg" height="64" title="Click to open my full-stack apps" alt="Full-stack apps" /></picture></summary>
-<br/>
+<h3 align="center">Full-stack apps</h3>
+
 <p align="center">
   <a href="https://github.com/ultimate-kiran/bus_system" title="Open School Bus Transport System on GitHub"><img src="assets/card-bus.svg" width="49%" title="Open School Bus Transport System on GitHub" alt="School Bus Transport System: routes, per-student monthly fees and Razorpay AutoPay." /></a>
   <a href="https://github.com/ultimate-kiran/farm-management" title="Open Organic Farm Portal on GitHub"><img src="assets/card-farm.svg" width="49%" title="Open Organic Farm Portal on GitHub" alt="Organic Farm Portal: website and management portal for an organic dairy and goat farm in Tamil Nadu." /></a>
@@ -44,8 +42,6 @@
 <p align="center">
   Also on GitHub: <a href="https://github.com/ultimate-kiran/Hospital-Management-using-flutter" title="Flutter app">Hospital Management</a> (Flutter) and <a href="https://github.com/ultimate-kiran/fitness_tracker_angular" title="Angular app">Fitness Tracker</a> (Angular)
 </p>
-</details>
-</div>
 
 <p align="center">
   Try them live: <a href="https://airsaathi-smog-assistant.vercel.app" title="Open the AirSaathi live demo">AirSaathi</a> and <a href="https://farm-management-rose-iota.vercel.app" title="Open the farm portal live site">the farm portal</a>
