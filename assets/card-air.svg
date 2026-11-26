@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 600 380" width="600" height="380" role="img" aria-labelledby="t d"><title id="t">AirSaathi</title><desc id="d">Project, 2026, live. Turns today’s air quality into a low-emission plan for Indian families, in English and Hindi.</desc>
+  <defs>
+    <linearGradient id="cardBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#170E40"/><stop offset="1" stop-color="#090620"/></linearGradient>
+    <linearGradient id="holo" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="600" y2="380">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset=".5" stop-color="#8B5CF6"/><stop offset="1" stop-color="#E879F9"/>
+      <animateTransform attributeName="gradientTransform" type="rotate" from="0 300 170" to="360 300 170" dur="10s" repeatCount="indefinite"/>
+    </linearGradient>
+    <linearGradient id="sweep" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".09"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <radialGradient id="core"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#22D3EE"/><stop offset="1" stop-color="#8B5CF6"/></radialGradient>
+    <linearGradient id="scan" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#22D3EE" stop-opacity="0"/><stop offset=".5" stop-color="#22D3EE"/><stop offset="1" stop-color="#22D3EE" stop-opacity="0"/></linearGradient>
+    <clipPath id="clip"><rect x="10" y="14" width="580" height="350" rx="22"/></clipPath>
+    <filter id="g" filterUnits="userSpaceOnUse" x="0" y="0" width="600" height="380"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <style>
+    .float{animation:float 6s ease-in-out infinite alternate;animation-delay:0.3s}
+    @keyframes float{from{transform:translateY(4px)}to{transform:translateY(-6px)}}
+    .ctx{font:600 14px 'Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;fill:#67E8F9}
+    .ttl{font:700 29px 'Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;fill:#F5F3FF}
+    .desc{font:400 16.5px 'Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;fill:#C4B5FD}
+    .chip{fill:rgba(139,92,246,.16);stroke:rgba(196,181,253,.45);stroke-width:1}
+    .chipt{font:500 13px 'Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;fill:#F5F3FF;text-anchor:middle}
+    .cap{font:500 12px 'Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;fill:#C4B5FD;text-anchor:middle;opacity:.85}
+    .orbit{fill:none;stroke:#C4B5FD;stroke-opacity:.2;stroke-dasharray:3 6}
+    .spoke{stroke:#C4B5FD;stroke-opacity:.35;stroke-width:1.2}
+    .agent{animation:blink 2.8s ease-in-out infinite}
+    @keyframes blink{0%,100%{opacity:.6}50%{opacity:1}}
+    .win{fill:rgba(18,11,51,.9);stroke:#22D3EE;stroke-width:2}
+    .pipe{stroke:#8B5CF6;stroke-width:2;stroke-dasharray:4 5;animation:flow 1s linear infinite}
+    .flow{fill:none;stroke:#8B5CF6;stroke-width:2;stroke-dasharray:4 5;animation:flow 1s linear infinite}
+    @keyframes flow{to{stroke-dashoffset:-9}}
+    .brace{font:700 40px 'Cascadia Code',Consolas,'SFMono-Regular',Menlo,monospace;fill:#E879F9;text-anchor:middle}
+    .check{fill:none;stroke:#22D3EE;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1 1;animation:tick 2.4s ease-out infinite}
+    @keyframes tick{0%,35%{stroke-dashoffset:1}60%,100%{stroke-dashoffset:0}}
+    .scan{animation:scan 2.6s ease-in-out infinite alternate}
+    @keyframes scan{from{transform:translateY(0)}to{transform:translateY(122px)}}
+    .field{opacity:0;animation:field 4.5s ease-out infinite}
+    @keyframes field{0%{opacity:0;transform:translateX(-8px)}12%,85%{opacity:1;transform:none}100%{opacity:0}}
+    .sweep{animation:sweep 7s ease-in-out infinite;animation-delay:0.3s}
+    @keyframes sweep{0%,55%{transform:translateX(-260px) skewX(-20deg)}100%{transform:translateX(760px) skewX(-20deg)}}
+    @media (prefers-reduced-motion: reduce){.float,.agent,.pipe,.flow,.check,.scan,.field,.sweep{animation:none!important}}
+    .lang{animation:lang 4s ease-in-out infinite}.lang2{animation-delay:2s}
+    @keyframes lang{0%,100%{opacity:.35}25%,45%{opacity:1}}
+    .row{opacity:0;animation:field 4.5s ease-out infinite}
+    .sqlpop{animation:lang 4.5s ease-in-out infinite;animation-delay:2.2s}
+    .prog{transform-origin:358px 0;animation:prog 4s ease-in-out infinite}
+    @keyframes prog{0%{transform:scaleX(0)}70%,100%{transform:scaleX(1)}}
+    .bub{opacity:0;animation:bub 5s ease-out infinite}.b2{animation-delay:1.6s}
+    @keyframes bub{0%{opacity:0;transform:translateY(8px)}10%,85%{opacity:1;transform:none}100%{opacity:0}}
+    .typing{animation:typing 5s linear infinite}
+    @keyframes typing{0%,12%{opacity:0}16%,30%{opacity:1}34%,100%{opacity:0}}
+    .fee{animation:lang 3s ease-in-out infinite}
+    .bar{animation:barg 4s ease-in-out infinite}
+    @keyframes barg{0%{transform:scaleY(.15)}45%,100%{transform:scaleY(1)}}
+    .grow{stroke-dasharray:1 1;animation:growl 4s ease-out infinite}
+    @keyframes growl{0%{stroke-dashoffset:1}40%,100%{stroke-dashoffset:0}}
+    .leaf{opacity:0;animation:leaf 4s ease-out infinite}
+    @keyframes leaf{0%,35%{opacity:0}55%,92%{opacity:.85}100%{opacity:0}}
+    @media (prefers-reduced-motion: reduce){.lang,.row,.sqlpop,.prog,.bub,.typing,.fee,.bar,.grow,.leaf{animation:none!important}}
+    @media (prefers-reduced-motion: reduce){.field,.row,.bub,.leaf{opacity:1}}
+  </style>
+  <g class="float">
+    <rect x="10" y="14" width="580" height="350" rx="22" fill="url(#cardBg)"/>
+    <g clip-path="url(#clip)">
+      <circle cx="470" cy="205" r="150" fill="#8B5CF6" opacity=".12"/>
+      <rect class="sweep" x="0" y="0" width="160" height="380" fill="url(#sweep)"/>
+    </g>
+    <rect x="10" y="14" width="580" height="350" rx="22" fill="none" stroke="url(#holo)" stroke-width="1.6"/>
+    <text x="40" y="58" class="ctx">Project, 2026, live</text>
+    <text x="40" y="98" class="ttl">AirSaathi</text>
+    <text x="40" y="138" class="desc">Turns today’s air quality into a</text><text x="40" y="163" class="desc">low-emission plan for Indian families,</text><text x="40" y="188" class="desc">in English and Hindi.</text>
+    <g><rect x="40" y="222" width="100" height="26" rx="13" class="chip"/><text x="90" y="239.5" class="chipt">TypeScript</text></g><g><rect x="148" y="222" width="61" height="26" rx="13" class="chip"/><text x="178.5" y="239.5" class="chipt">GenAI</text></g><g><rect x="217" y="222" width="115.6" height="26" rx="13" class="chip"/><text x="274.8" y="239.5" class="chipt">Rules engine</text></g><g><rect x="40" y="256" width="68.8" height="26" rx="13" class="chip"/><text x="74.4" y="273.5" class="chipt">Vercel</text></g>
+    <g filter="url(#g)"><linearGradient id="aqi" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#22D3EE"/><stop offset=".55" stop-color="#8B5CF6"/><stop offset="1" stop-color="#E879F9"/></linearGradient>
+      <path d="M396 223A74 74 0 0 1 544 223" fill="none" stroke="url(#aqi)" stroke-width="10" stroke-linecap="round"/>
+      <line x1="412" y1="223" x2="404" y2="223" stroke="#C4B5FD" stroke-opacity=".5" stroke-width="1.5"/><line x1="419.8" y1="194" x2="412.8" y2="190" stroke="#C4B5FD" stroke-opacity=".5" stroke-width="1.5"/><line x1="441" y1="172.8" x2="437" y2="165.8" stroke="#C4B5FD" stroke-opacity=".5" stroke-width="1.5"/><line x1="470" y1="165" x2="470" y2="157" stroke="#C4B5FD" stroke-opacity=".5" stroke-width="1.5"/><line x1="499" y1="172.8" x2="503" y2="165.8" stroke="#C4B5FD" stroke-opacity=".5" stroke-width="1.5"/><line x1="520.2" y1="194" x2="527.2" y2="190" stroke="#C4B5FD" stroke-opacity=".5" stroke-width="1.5"/><line x1="528" y1="223" x2="536" y2="223" stroke="#C4B5FD" stroke-opacity=".5" stroke-width="1.5"/>
+      <g><animateTransform attributeName="transform" type="rotate" values="-70 470 223;35 470 223;10 470 223;55 470 223;-70 470 223" keyTimes="0;.3;.5;.75;1" dur="6s" repeatCount="indefinite" calcMode="spline" keySplines=".4 0 .2 1;.4 0 .2 1;.4 0 .2 1;.4 0 .2 1"/>
+        <line x1="470" y1="223" x2="470" y2="167" stroke="#F5F3FF" stroke-width="3.5" stroke-linecap="round"/></g>
+      <circle cx="470" cy="223" r="8" fill="url(#core)"/>
+      <text x="470" y="253" class="cap">air quality today</text>
+      <g class="lang lang1"><rect x="412" y="269" width="52" height="28" rx="14" class="chip"/><text x="438" y="288" class="chipt">EN</text></g>
+      <g class="lang lang2"><rect x="476" y="269" width="52" height="28" rx="14" class="chip"/><text x="502" y="288" class="chipt">हिं</text></g></g>
+  </g>
+</svg>
