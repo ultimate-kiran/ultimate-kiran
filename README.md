@@ -25,8 +25,9 @@
   <a href="https://github.com/ultimate-kiran/Multi_agent_document_processor" title="Open Multi-Agent Document Processor on GitHub"><img src="assets/card-doc.svg" width="49%" title="Open Multi-Agent Document Processor on GitHub" alt="Multi-Agent Document Processor: four LangGraph agents classify, extract and validate documents." /></a>
 </p>
 
+<div align="center">
 <details>
-<summary><img src="assets/btn-more-ai.svg" height="64" title="Click to show 3 more AI projects" alt="Show 3 more AI projects" /></summary>
+<summary><picture><img src="assets/btn-more-ai.svg" height="64" title="Click to show 3 more AI projects" alt="Show 3 more AI projects" /></picture></summary>
 <br/>
 <p align="center">
   <a href="https://github.com/ultimate-kiran/image_and_prompt_to_image_generator_ai_project" title="Open AI Image Redesign Studio on GitHub"><img src="assets/card-image.svg" width="49%" title="Open AI Image Redesign Studio on GitHub" alt="AI Image Redesign Studio: redesigns images from a prompt, with progress tracking and ZIP downloads." /></a>
@@ -36,9 +37,11 @@
   <img src="assets/card-fed.svg" width="49%" title="FedLiteLLMGuard: research project, 2025" alt="FedLiteLLMGuard: federated TinyBERT that detects rare attacks on 5G networks." />
 </p>
 </details>
+</div>
 
+<div align="center">
 <details>
-<summary><img src="assets/btn-fullstack.svg" height="64" title="Click to open my full-stack apps" alt="Full-stack apps" /></summary>
+<summary><picture><img src="assets/btn-fullstack.svg" height="64" title="Click to open my full-stack apps" alt="Full-stack apps" /></picture></summary>
 <br/>
 <p align="center">
   <a href="https://github.com/ultimate-kiran/bus_system" title="Open School Bus Transport System on GitHub"><img src="assets/card-bus.svg" width="49%" title="Open School Bus Transport System on GitHub" alt="School Bus Transport System: routes, per-student monthly fees and Razorpay AutoPay." /></a>
@@ -48,6 +51,7 @@
   Also on GitHub: <a href="https://github.com/ultimate-kiran/Hospital-Management-using-flutter" title="Flutter app">Hospital Management</a> (Flutter) and <a href="https://github.com/ultimate-kiran/fitness_tracker_angular" title="Angular app">Fitness Tracker</a> (Angular)
 </p>
 </details>
+</div>
 
 <p align="center">
   Try them live: <a href="https://airsaathi-smog-assistant.vercel.app" title="Open the AirSaathi live demo">AirSaathi</a> and <a href="https://farm-management-rose-iota.vercel.app" title="Open the farm portal live site">the farm portal</a>
@@ -61,8 +65,9 @@
   <img src="assets/creds.svg" width="100%" title="Certifications and wins" alt="Certifications: AWS Certified Cloud Practitioner 2024, Alteryx Designer Core 2026, Google Cloud Computing Foundations (NPTEL) 2024, AI Workshop at IIT Madras 2024, and top 10 of 40,000 applicants at the Paytm Hackathon." />
 </p>
 
+<div align="center">
 <details>
-<summary><img src="assets/btn-opensource.svg" height="64" title="Click to see my fixes to npm" alt="Open-source work on npm" /></summary>
+<summary><picture><img src="assets/btn-opensource.svg" height="64" title="Click to see my fixes to npm" alt="Open-source work on npm" /></picture></summary>
 <br/>
 <p align="center">Fixes I've sent to <a href="https://github.com/npm/cli" title="npm/cli on GitHub">npm/cli</a>, the package manager that ships with Node.js</p>
 
@@ -76,6 +81,7 @@
 
 </div>
 </details>
+</div>
 
 <p align="center">
   <img height="165" src="https://github-readme-stats.vercel.app/api?username=ultimate-kiran&show_icons=true&count_private=true&bg_color=000000&title_color=EDE6D6&text_color=9A9385&icon_color=C9A96E&border_color=4A3F2C&border_radius=2" title="GitHub stats" alt="GitHub stats for ultimate-kiran" />
