@@ -272,6 +272,97 @@ const visuals = {
     }
     return `${out}<circle cx="${cx}" cy="${cy}" r="20" fill="url(#core)"/>`
   },
+  // air-quality gauge whose needle moves, with English and Hindi answers
+  air (cx, cy) {
+    const r = 74; const y0 = cy + 18
+    const pt = a => [f(cx + Math.cos(a) * r), f(y0 - Math.sin(a) * r)]
+    const [ax, ay] = pt(Math.PI); const [bx, by] = pt(0)
+    let ticks = ''
+    for (let i = 0; i <= 6; i++) {
+      const a = Math.PI - (i / 6) * Math.PI
+      ticks += `<line x1="${f(cx + Math.cos(a) * (r - 16))}" y1="${f(y0 - Math.sin(a) * (r - 16))}" x2="${f(cx + Math.cos(a) * (r - 8))}" y2="${f(y0 - Math.sin(a) * (r - 8))}" stroke="${C.lav}" stroke-opacity=".5" stroke-width="1.5"/>`
+    }
+    return `<linearGradient id="aqi" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${C.cyan}"/><stop offset=".55" stop-color="${C.violet}"/><stop offset="1" stop-color="${C.magenta}"/></linearGradient>
+      <path d="M${ax} ${ay}A${r} ${r} 0 0 1 ${bx} ${by}" fill="none" stroke="url(#aqi)" stroke-width="10" stroke-linecap="round"/>
+      ${ticks}
+      <g><animateTransform attributeName="transform" type="rotate" values="-70 ${cx} ${y0};35 ${cx} ${y0};10 ${cx} ${y0};55 ${cx} ${y0};-70 ${cx} ${y0}" keyTimes="0;.3;.5;.75;1" dur="6s" repeatCount="indefinite" calcMode="spline" keySplines=".4 0 .2 1;.4 0 .2 1;.4 0 .2 1;.4 0 .2 1"/>
+        <line x1="${cx}" y1="${y0}" x2="${cx}" y2="${y0 - r + 18}" stroke="${C.white}" stroke-width="3.5" stroke-linecap="round"/></g>
+      <circle cx="${cx}" cy="${y0}" r="8" fill="url(#core)"/>
+      <text x="${cx}" y="${y0 + 30}" class="cap">air quality today</text>
+      <g class="lang lang1"><rect x="${cx - 58}" y="${y0 + 46}" width="52" height="28" rx="14" class="chip"/><text x="${cx - 32}" y="${y0 + 65}" class="chipt">EN</text></g>
+      <g class="lang lang2"><rect x="${cx + 6}" y="${y0 + 46}" width="52" height="28" rx="14" class="chip"/><text x="${cx + 32}" y="${y0 + 65}" class="chipt">हिं</text></g>`
+  },
+  // messy files go through agents and come out as a table
+  extract (cx, cy) {
+    let files = ''
+    ;['CSV', 'PDF', 'XLS'].forEach((t, i) => {
+      const y = cy - 62 + i * 46
+      files += `<rect x="${cx - 118}" y="${y}" width="40" height="34" rx="6" class="win"/><text x="${cx - 98}" y="${y + 22}" class="cap" style="font-size:10.5px">${t}</text>`
+      files += `<path d="M${cx - 76} ${y + 17}C${cx - 52} ${y + 17} ${cx - 50} ${cy} ${cx - 30} ${cy}" class="flow"/>`
+    })
+    let rows = ''
+    for (let i = 0; i < 4; i++) {
+      rows += `<g class="row" style="animation-delay:${f(0.5 + i * 0.4)}s"><rect x="${cx + 20}" y="${cy - 40 + i * 22}" width="34" height="14" rx="3" fill="${C.cyan}" opacity=".55"/><rect x="${cx + 58}" y="${cy - 40 + i * 22}" width="50" height="14" rx="3" fill="${C.violet}" opacity=".6"/></g>`
+    }
+    return `${files}
+      <circle cx="${cx - 16}" cy="${cy}" r="14" fill="url(#core)"/>
+      <path d="M${cx - 2} ${cy}H${cx + 14}" class="flow"/>
+      <rect x="${cx + 14}" y="${cy - 50}" width="100" height="100" rx="8" class="win"/>
+      ${rows}
+      <g class="sqlpop"><rect x="${cx + 34}" y="${cy + 62}" width="62" height="26" rx="13" class="chip"/><text x="${cx + 65}" y="${cy + 79}" class="chipt">SQL</text></g>`
+  },
+  // an image is redesigned from a prompt, with a progress bar
+  image (cx, cy) {
+    const frame = (x, tone) => `<rect x="${x}" y="${cy - 58}" width="84" height="74" rx="8" class="win"/>
+      <path d="M${x + 8} ${cy + 8}L${x + 30} ${cy - 22}L${x + 46} ${cy - 2}L${x + 58} ${cy - 14}L${x + 76} ${cy + 8}Z" fill="${tone}" opacity=".8"/>`
+    return `${frame(cx - 112, C.lav)}
+      <circle cx="${cx + 88}" cy="${cy - 36}" r="8" fill="${C.magenta}"/>
+      ${frame(cx + 28, C.cyan)}
+      <path d="M${cx - 22} ${cy - 20}H${cx + 22}" class="flow"/>
+      <text x="${cx}" y="${cy - 30}" class="cap">prompt</text>
+      <rect x="${cx - 112}" y="${cy + 36}" width="224" height="10" rx="5" fill="rgba(196,181,253,.15)"/>
+      <rect x="${cx - 112}" y="${cy + 36}" width="224" height="10" rx="5" fill="url(#aqi2)" class="prog"/>
+      <linearGradient id="aqi2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${C.cyan}"/><stop offset="1" stop-color="${C.magenta}"/></linearGradient>
+      <text x="${cx - 70}" y="${cy + 72}" class="cap">original</text><text x="${cx + 70}" y="${cy + 72}" class="cap">redesigned</text>`
+  },
+  // ask a PDF a question and get an answer
+  pdf (cx, cy) {
+    const x = cx - 118; const y = cy - 60
+    let lines = ''
+    for (let i = 0; i < 5; i++) lines += `<rect x="${x + 12}" y="${y + 30 + i * 14}" width="${[44, 36, 50, 30, 42][i]}" height="5" rx="2.5" fill="${C.lav}" opacity=".45"/>`
+    return `<path d="M${x} ${y}H${x + 56}L${x + 72} ${y + 16}V${y + 120}H${x}Z" class="win"/>
+      <text x="${x + 36}" y="${y + 20}" class="cap" style="font-size:11px">PDF</text>${lines}
+      <g class="bub b1"><rect x="${cx - 26}" y="${cy - 58}" width="136" height="34" rx="14" fill="none" stroke="${C.cyan}" stroke-width="1.6"/><text x="${cx + 42}" y="${cy - 36}" class="chipt">Summarise page 4</text></g>
+      <g class="bub b2"><rect x="${cx - 26}" y="${cy - 12}" width="136" height="54" rx="14" fill="rgba(139,92,246,.35)"/><rect x="${cx - 12}" y="${cy + 2}" width="104" height="6" rx="3" fill="${C.white}" opacity=".7"/><rect x="${cx - 12}" y="${cy + 16}" width="78" height="6" rx="3" fill="${C.white}" opacity=".5"/><text x="${cx + 98}" y="${cy + 54}" class="cap" style="text-anchor:end">from page 4</text></g>
+      <g class="typing"><circle cx="${cx - 4}" cy="${cy + 16}" r="3.5" fill="${C.lav}"/><circle cx="${cx + 8}" cy="${cy + 16}" r="3.5" fill="${C.lav}"/><circle cx="${cx + 20}" cy="${cy + 16}" r="3.5" fill="${C.lav}"/></g>`
+  },
+  // a school bus drives its route; fees are paid automatically
+  bus (cx, cy) {
+    const road = `M${cx - 118} ${cy + 52}C${cx - 60} ${cy + 52} ${cx - 70} ${cy - 10} ${cx - 10} ${cy - 10}S${cx + 50} ${cy - 62} ${cx + 112} ${cy - 56}`
+    let stops = ''
+    for (const [sx, sy] of [[cx - 118, cy + 52], [cx - 10, cy - 10], [cx + 112, cy - 56]]) stops += `<circle cx="${sx}" cy="${sy}" r="7" fill="${C.deep}" stroke="${C.cyan}" stroke-width="2.5"/>`
+    return `<path d="${road}" fill="none" stroke="rgba(196,181,253,.25)" stroke-width="14" stroke-linecap="round"/>
+      <path d="${road}" class="flow"/>
+      ${stops}
+      <g><animateMotion dur="5s" repeatCount="indefinite" rotate="auto" path="${road}"/>
+        <rect x="-16" y="-9" width="32" height="18" rx="5" fill="${C.magenta}"/><rect x="4" y="-6" width="8" height="6" rx="1.5" fill="${C.white}" opacity=".85"/><rect x="-10" y="-6" width="10" height="6" rx="1.5" fill="${C.white}" opacity=".85"/></g>
+      <g class="fee"><circle cx="${cx + 78}" cy="${cy + 44}" r="22" fill="rgba(34,211,238,.15)" stroke="${C.cyan}" stroke-width="2"/><text x="${cx + 78}" y="${cy + 52}" style="font:700 22px ${SANS};fill:${C.white};text-anchor:middle">₹</text></g>
+      <text x="${cx + 78}" y="${cy + 86}" class="cap">AutoPay</text>`
+  },
+  // farm records grow like crops
+  farm (cx, cy) {
+    let bars = ''
+    ;[46, 70, 58, 88, 76].forEach((h, i) => {
+      const x = cx - 104 + i * 30
+      bars += `<rect x="${x}" y="${cy + 50 - h}" width="20" height="${h}" rx="5" fill="${i % 2 ? C.violet : C.cyan}" opacity=".75" class="bar" style="animation-delay:${f(i * 0.18)}s;transform-origin:${x + 10}px ${cy + 50}px"/>`
+    })
+    return `<line x1="${cx - 114}" y1="${cy + 50}" x2="${cx + 50}" y2="${cy + 50}" stroke="${C.lav}" stroke-opacity=".4" stroke-width="1.5"/>
+      ${bars}
+      <path d="M${cx + 88} ${cy + 50}V${cy - 6}" stroke="${C.cyan}" stroke-width="3" class="grow" pathLength="1" fill="none"/>
+      <path d="M${cx + 88} ${cy + 6}C${cx + 62} ${cy + 2} ${cx + 58} ${cy - 22} ${cx + 66} ${cy - 34}C${cx + 84} ${cy - 30} ${cx + 92} ${cy - 12} ${cx + 88} ${cy + 6}Z" fill="${C.cyan}" opacity=".8" class="leaf"/>
+      <path d="M${cx + 88} ${cy - 6}C${cx + 110} ${cy - 10} ${cx + 118} ${cy - 34} ${cx + 110} ${cy - 46}C${cx + 94} ${cy - 40} ${cx + 86} ${cy - 24} ${cx + 88} ${cy - 6}Z" fill="${C.magenta}" opacity=".8" class="leaf" style="animation-delay:.4s"/>
+      <text x="${cx - 44}" y="${cy + 74}" class="cap">milk, eggs, livestock</text>`
+  },
 }
 
 function card ({ id, context, title, lines, chips, visual, delay }) {
@@ -322,7 +413,25 @@ function card ({ id, context, title, lines, chips, visual, delay }) {
     .sweep{animation:sweep 7s ease-in-out infinite;animation-delay:${delay}s}
     @keyframes sweep{0%,55%{transform:translateX(-260px) skewX(-20deg)}100%{transform:translateX(760px) skewX(-20deg)}}
     ${reduced('.float,.agent,.pipe,.flow,.check,.scan,.field,.sweep')}
-    @media (prefers-reduced-motion: reduce){.field{opacity:1}}
+    .lang{animation:lang 4s ease-in-out infinite}.lang2{animation-delay:2s}
+    @keyframes lang{0%,100%{opacity:.35}25%,45%{opacity:1}}
+    .row{opacity:0;animation:field 4.5s ease-out infinite}
+    .sqlpop{animation:lang 4.5s ease-in-out infinite;animation-delay:2.2s}
+    .prog{transform-origin:358px 0;animation:prog 4s ease-in-out infinite}
+    @keyframes prog{0%{transform:scaleX(0)}70%,100%{transform:scaleX(1)}}
+    .bub{opacity:0;animation:bub 5s ease-out infinite}.b2{animation-delay:1.6s}
+    @keyframes bub{0%{opacity:0;transform:translateY(8px)}10%,85%{opacity:1;transform:none}100%{opacity:0}}
+    .typing{animation:typing 5s linear infinite}
+    @keyframes typing{0%,12%{opacity:0}16%,30%{opacity:1}34%,100%{opacity:0}}
+    .fee{animation:lang 3s ease-in-out infinite}
+    .bar{animation:barg 4s ease-in-out infinite}
+    @keyframes barg{0%{transform:scaleY(.15)}45%,100%{transform:scaleY(1)}}
+    .grow{stroke-dasharray:1 1;animation:growl 4s ease-out infinite}
+    @keyframes growl{0%{stroke-dashoffset:1}40%,100%{stroke-dashoffset:0}}
+    .leaf{opacity:0;animation:leaf 4s ease-out infinite}
+    @keyframes leaf{0%,35%{opacity:0}55%,92%{opacity:.85}100%{opacity:0}}
+    ${reduced('.lang,.row,.sqlpop,.prog,.bub,.typing,.fee,.bar,.grow,.leaf')}
+    @media (prefers-reduced-motion: reduce){.field,.row,.bub,.leaf{opacity:1}}
   </style>
   <g class="float">
     <rect x="10" y="14" width="580" height="350" rx="22" fill="url(#cardBg)"/>
@@ -335,7 +444,7 @@ function card ({ id, context, title, lines, chips, visual, delay }) {
     ${tl.map((t, i) => `<text x="40" y="${98 + i * 34}" class="ttl">${esc(t)}</text>`).join('')}
     ${lines.map((l, i) => `<text x="40" y="${descY + i * 25}" class="desc">${esc(l)}</text>`).join('')}
     ${chipRow(chips, 40, chipY, 330)}
-    <g filter="url(#g)">${visuals[visual](visual === 'doc' ? 452 : 470, 205)}</g>
+    <g filter="url(#g)">${visuals[visual](['doc', 'extract', 'bus'].includes(visual) ? 456 : 470, 205)}</g>
   </g>
 </svg>
 `
@@ -353,6 +462,16 @@ const cards = [
     chips: ['Job queues', 'PostgreSQL', 'SSRF protection', 'HMAC'],
   },
   {
+    id: 'air', visual: 'air', delay: 0.3, context: 'Project, 2026, live', title: 'AirSaathi',
+    lines: ['Turns today’s air quality into a', 'low-emission plan for Indian families,', 'in English and Hindi.'],
+    chips: ['TypeScript', 'GenAI', 'Rules engine', 'Vercel'],
+  },
+  {
+    id: 'extract', visual: 'extract', delay: 1.5, context: 'Project, 2026', title: 'Intelligent Data Extraction Pipeline',
+    lines: ['Agents discover the schema, pull data', 'out of messy files, answer questions', 'in SQL and check data quality.'],
+    chips: ['Python', 'Multi-agent', 'NL to SQL', 'Docker'],
+  },
+  {
     id: 'rag', visual: 'rag', delay: 0.6, context: 'Project, 2026', title: 'Medical Knowledge Assistant',
     lines: ['Agentic RAG with hybrid search and a', 'hallucination guard that checks every', 'answer against its sources.'],
     chips: ['LangGraph', 'ChromaDB', 'BM25', 'FastAPI'],
@@ -366,6 +485,26 @@ const cards = [
     id: 'fed', visual: 'fed', delay: 0.9, context: 'Project, 2025', title: 'FedLiteLLMGuard',
     lines: ['Federated TinyBERT that detects rare', 'attacks on 5G networks without', 'pooling anyone’s raw traffic.'],
     chips: ['PyTorch', 'TinyBERT', 'Federated learning'],
+  },
+  {
+    id: 'image', visual: 'image', delay: 1.1, context: 'Project, 2026', title: 'AI Image Redesign Studio',
+    lines: ['Full-stack app that redesigns images', 'from a prompt, with live progress', 'and ZIP downloads.'],
+    chips: ['FastAPI', 'React', 'Replicate', 'Docker'],
+  },
+  {
+    id: 'pdf', visual: 'pdf', delay: 0.4, context: 'Project, 2026', title: 'PDF Chatbot',
+    lines: ['Upload a PDF and ask it questions.', 'LangChain splits and retrieves the', 'text; Groq writes the answers.'],
+    chips: ['LangChain', 'Groq', 'PyPDF', 'Colab'],
+  },
+  {
+    id: 'bus', visual: 'bus', delay: 0.7, context: 'Full-stack app, 2026', title: 'School Bus Transport System',
+    lines: ['Runs a school’s bus service: routes,', 'per-student monthly fees and', 'Razorpay AutoPay.'],
+    chips: ['React', 'Express', 'MongoDB', 'Razorpay'],
+  },
+  {
+    id: 'farm', visual: 'farm', delay: 1.4, context: 'Full-stack app, 2026, live', title: 'Organic Farm Portal',
+    lines: ['Website and management portal for', 'an organic dairy and goat farm in', 'Tamil Nadu.'],
+    chips: ['JavaScript', 'Frontend + backend', 'Vercel'],
   },
 ]
 
