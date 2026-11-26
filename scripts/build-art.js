@@ -129,7 +129,7 @@ function hero () {
   }
 
   const name = 'Kiran D'
-  return `${svgOpen(W, H, 'Kiran D, AI/ML engineer', 'A slowly rotating 3D neural network drawn in gold and ivory, with signals passing forward through its layers, beside the name Kiran D.')}
+  return `${svgOpen(W, H, 'Kiran D, Forward Deployed Engineer and AI/ML engineer', 'A slowly rotating 3D neural network drawn in gold and ivory, with signals passing forward through its layers, beside the name Kiran D.')}
   ${spaceBg(W, H, 110)}
   <defs>
     ${defs}
@@ -174,7 +174,7 @@ function hero () {
     <text class="name" x="64" y="250" fill="url(#shine)" opacity=".55">${name}</text>
   </g>
   <rect class="rise" style="animation-delay:.35s" x="70" y="284" width="96" height="1" fill="${GOLD}"/>
-  <text class="role rise" style="animation-delay:.45s" x="68" y="334">AI/ML engineer</text>
+  <text class="role rise" style="animation-delay:.45s" x="68" y="334">Forward Deployed Engineer, AI/ML</text>
   <text class="line rise" style="animation-delay:.6s" x="68" y="376">I build multi-agent systems and RAG pipelines</text>
   <text class="line rise" style="animation-delay:.7s" x="68" y="404">that hold up in production.</text>
   <text class="where rise" style="animation-delay:.85s" x="68" y="460">Junior AI Developer at NXL Technologies, Kochi</text>
@@ -745,5 +745,4 @@ for (const c of cards) write(`card-${c.id}.svg`, card(c))
 write('toolkit.svg', toolkit())
 write('creds.svg', creds())
 write('linkedin.svg', linkedin())
-write('btn-fullstack.svg', button('Full-stack apps', 'click to open'))
 write('btn-opensource.svg', button('Open-source work on npm', 'click to open'))
