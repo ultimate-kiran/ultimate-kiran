@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/hero.svg" width="100%" alt="Kiran D, AI/ML engineer. I build multi-agent systems and RAG pipelines that hold up in production. Junior AI Developer at NXL Technologies, Chennai." />
+  <img src="assets/hero.svg" width="100%" alt="Kiran D, AI/ML engineer. I build multi-agent systems and RAG pipelines that hold up in production. Junior AI Developer at NXL Technologies, Kochi." />
 </p>
 
 <p align="center">
@@ -69,8 +69,8 @@
 </div>
 
 <p align="center">
-  <img height="165" src="https://github-readme-stats.vercel.app/api?username=ultimate-kiran&show_icons=true&count_private=true&bg_color=0B0724&title_color=F5F3FF&text_color=C4B5FD&icon_color=22D3EE&border_color=3B2A7A&border_radius=14" alt="GitHub stats for ultimate-kiran" />
-  <img height="165" src="https://streak-stats.demolab.com?user=ultimate-kiran&background=0B0724&border=3B2A7A&stroke=3B2A7A&ring=E879F9&fire=22D3EE&currStreakNum=F5F3FF&sideNums=F5F3FF&currStreakLabel=22D3EE&sideLabels=C4B5FD&dates=8B7FC7&border_radius=14" alt="Contribution streak" />
+  <img height="165" src="https://github-readme-stats.vercel.app/api?username=ultimate-kiran&show_icons=true&count_private=true&bg_color=000000&title_color=EDE6D6&text_color=9A9385&icon_color=C9A96E&border_color=4A3F2C&border_radius=2" alt="GitHub stats for ultimate-kiran" />
+  <img height="165" src="https://streak-stats.demolab.com?user=ultimate-kiran&background=000000&border=4A3F2C&stroke=4A3F2C&ring=C9A96E&fire=C9A96E&currStreakNum=EDE6D6&sideNums=EDE6D6&currStreakLabel=C9A96E&sideLabels=9A9385&dates=7A7366&border_radius=2" alt="Contribution streak" />
 </p>
 
 <p align="center">
