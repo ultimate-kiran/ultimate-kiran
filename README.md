@@ -1,26 +1,53 @@
 <p align="center">
-  <img src="assets/hero.svg" width="100%" alt="Kiran, forward deployed engineer. I build AI agents that leave the demo and ship to production. An isometric agent graph runs start, plan, claude, tools, end while a trace log records the fix behind npm/cli pull request 10362." />
+  <img src="assets/hero.svg" width="100%" alt="Kiran D, AI/ML engineer. I build multi-agent systems and RAG pipelines that hold up in production. Junior AI Developer at NXL Technologies, Chennai." />
 </p>
 
 <p align="center">
-  <img src="assets/stack.svg" width="100%" alt="What I build with: Claude for reasoning, LangGraph for agent loops and state, LangChain for tools and integrations, and Python, TypeScript and Node.js underneath." />
+  <a href="https://www.linkedin.com/in/kiran-d-9605772a4/"><img src="assets/linkedin.svg" height="64" alt="Connect on LinkedIn" /></a>
 </p>
 
-### Open-source work
+<h3 align="center">At NXL Technologies</h3>
 
-Fixes I've sent to [npm/cli](https://github.com/npm/cli), the package manager that ships with Node.js:
+<p align="center">
+  <img src="assets/card-vaic.svg" width="49%" alt="VAiC: multi-agent platform that evaluates startups with 8 specialised agents across 15 areas, with retries, timeouts and cited evidence." />
+  <img src="assets/card-pipes.svg" width="49%" alt="Pipes: turns websites into structured APIs that AI agents can call, with async workers and signed webhooks." />
+</p>
+
+<h3 align="center">Projects</h3>
+
+<p align="center">
+  <a href="https://github.com/ultimate-kiran/Medical_Knowledge_Assistant"><img src="assets/card-rag.svg" width="49%" alt="Medical Knowledge Assistant: agentic RAG with hybrid search and a hallucination guard." /></a>
+  <a href="https://github.com/ultimate-kiran/Multi_agent_document_processor"><img src="assets/card-doc.svg" width="49%" alt="Multi-Agent Document Processor: four LangGraph agents classify, extract and validate documents." /></a>
+</p>
+<p align="center">
+  <img src="assets/card-fed.svg" width="49%" alt="FedLiteLLMGuard: federated TinyBERT that detects rare attacks on 5G networks." />
+</p>
+
+<p align="center">
+  <img src="assets/toolkit.svg" width="100%" alt="Toolkit: LangGraph, LangChain, ChromaDB, BM25, RAG, PyTorch, Hugging Face, TinyBERT, Scikit-learn, Pandas, NumPy, Python, FastAPI, Pydantic, Java, SQL, PostgreSQL, React, Docker." />
+</p>
+
+<p align="center">
+  <img src="assets/creds.svg" width="100%" alt="Certifications: AWS Certified Cloud Practitioner 2024, Alteryx Designer Core 2026, Google Cloud Computing Foundations (NPTEL) 2024, AI Workshop at IIT Madras 2024, and top 10 of 40,000 applicants at the Paytm Hackathon." />
+</p>
+
+<h3 align="center">Open source</h3>
+
+<p align="center">Fixes I've sent to <a href="https://github.com/npm/cli">npm/cli</a>, the package manager that ships with Node.js</p>
+
+<div align="center">
 
 | Pull request | What it fixes |
 |---|---|
-| [#10362](https://github.com/npm/cli/pull/10362) | `npm uninstall` and `--dry-run` report nothing removed under `install-strategy=linked` |
+| [#10362](https://github.com/npm/cli/pull/10362) | `npm uninstall` reports nothing removed under `install-strategy=linked` |
 | [#10353](https://github.com/npm/cli/pull/10353) | `npm ci` rejects patches after Git for Windows converts them to CRLF |
 | [#10351](https://github.com/npm/cli/pull/10351) | `npx` can't run pnpm-style `%~dp0` shims on Windows |
 
-### Activity
+</div>
 
 <p align="center">
-  <img height="165" src="https://github-readme-stats.vercel.app/api?username=ultimate-kiran&show_icons=true&count_private=true&hide_border=false&bg_color=0A2342&title_color=E8F1FF&text_color=7FA7D6&icon_color=FFB000&border_color=1E4A7A&border_radius=6" alt="GitHub stats for ultimate-kiran" />
-  <img height="165" src="https://streak-stats.demolab.com?user=ultimate-kiran&background=0A2342&border=1E4A7A&stroke=1E4A7A&ring=FFB000&fire=FFB000&currStreakNum=E8F1FF&sideNums=E8F1FF&currStreakLabel=FFB000&sideLabels=7FA7D6&dates=7FA7D6&border_radius=6" alt="Contribution streak" />
+  <img height="165" src="https://github-readme-stats.vercel.app/api?username=ultimate-kiran&show_icons=true&count_private=true&bg_color=0B0724&title_color=F5F3FF&text_color=C4B5FD&icon_color=22D3EE&border_color=3B2A7A&border_radius=14" alt="GitHub stats for ultimate-kiran" />
+  <img height="165" src="https://streak-stats.demolab.com?user=ultimate-kiran&background=0B0724&border=3B2A7A&stroke=3B2A7A&ring=E879F9&fire=22D3EE&currStreakNum=F5F3FF&sideNums=F5F3FF&currStreakLabel=22D3EE&sideLabels=C4B5FD&dates=8B7FC7&border_radius=14" alt="Contribution streak" />
 </p>
 
 <p align="center">
