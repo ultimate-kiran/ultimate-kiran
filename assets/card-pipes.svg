@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 600 380" width="600" height="380" role="img" aria-labelledby="t d"><title id="t">Pipes</title><desc id="d">NXL Technologies. Turns websites into structured APIs that AI agents can call, with async workers and signed webhooks.</desc>
+  <defs>
+    <linearGradient id="cardBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#170E40"/><stop offset="1" stop-color="#090620"/></linearGradient>
+    <linearGradient id="holo" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="600" y2="380">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset=".5" stop-color="#8B5CF6"/><stop offset="1" stop-color="#E879F9"/>
+      <animateTransform attributeName="gradientTransform" type="rotate" from="0 300 170" to="360 300 170" dur="10s" repeatCount="indefinite"/>
+    </linearGradient>
+    <linearGradient id="sweep" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".09"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <radialGradient id="core"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#22D3EE"/><stop offset="1" stop-color="#8B5CF6"/></radialGradient>
+    <linearGradient id="scan" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#22D3EE" stop-opacity="0"/><stop offset=".5" stop-color="#22D3EE"/><stop offset="1" stop-color="#22D3EE" stop-opacity="0"/></linearGradient>
+    <clipPath id="clip"><rect x="10" y="14" width="580" height="350" rx="22"/></clipPath>
+    <filter id="g" filterUnits="userSpaceOnUse" x="0" y="0" width="600" height="380"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <style>
+    .float{animation:float 6s ease-in-out infinite alternate;animation-delay:1.2s}
+    @keyframes float{from{transform:translateY(4px)}to{transform:translateY(-6px)}}
+    .ctx{font:600 14px 'Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;fill:#67E8F9}
+    .ttl{font:700 29px 'Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;fill:#F5F3FF}
+    .desc{font:400 16.5px 'Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;fill:#C4B5FD}
+    .chip{fill:rgba(139,92,246,.16);stroke:rgba(196,181,253,.45);stroke-width:1}
+    .chipt{font:500 13px 'Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;fill:#F5F3FF;text-anchor:middle}
+    .cap{font:500 12px 'Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;fill:#C4B5FD;text-anchor:middle;opacity:.85}
+    .orbit{fill:none;stroke:#C4B5FD;stroke-opacity:.2;stroke-dasharray:3 6}
+    .spoke{stroke:#C4B5FD;stroke-opacity:.35;stroke-width:1.2}
+    .agent{animation:blink 2.8s ease-in-out infinite}
+    @keyframes blink{0%,100%{opacity:.6}50%{opacity:1}}
+    .win{fill:rgba(18,11,51,.9);stroke:#22D3EE;stroke-width:2}
+    .pipe{stroke:#8B5CF6;stroke-width:2;stroke-dasharray:4 5;animation:flow 1s linear infinite}
+    .flow{fill:none;stroke:#8B5CF6;stroke-width:2;stroke-dasharray:4 5;animation:flow 1s linear infinite}
+    @keyframes flow{to{stroke-dashoffset:-9}}
+    .brace{font:700 40px 'Cascadia Code',Consolas,'SFMono-Regular',Menlo,monospace;fill:#E879F9;text-anchor:middle}
+    .check{fill:none;stroke:#22D3EE;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1 1;animation:tick 2.4s ease-out infinite}
+    @keyframes tick{0%,35%{stroke-dashoffset:1}60%,100%{stroke-dashoffset:0}}
+    .scan{animation:scan 2.6s ease-in-out infinite alternate}
+    @keyframes scan{from{transform:translateY(0)}to{transform:translateY(122px)}}
+    .field{opacity:0;animation:field 4.5s ease-out infinite}
+    @keyframes field{0%{opacity:0;transform:translateX(-8px)}12%,85%{opacity:1;transform:none}100%{opacity:0}}
+    .sweep{animation:sweep 7s ease-in-out infinite;animation-delay:1.2s}
+    @keyframes sweep{0%,55%{transform:translateX(-260px) skewX(-20deg)}100%{transform:translateX(760px) skewX(-20deg)}}
+    @media (prefers-reduced-motion: reduce){.float,.agent,.pipe,.flow,.check,.scan,.field,.sweep{animation:none!important}}
+    @media (prefers-reduced-motion: reduce){.field{opacity:1}}
+  </style>
+  <g class="float">
+    <rect x="10" y="14" width="580" height="350" rx="22" fill="url(#cardBg)"/>
+    <g clip-path="url(#clip)">
+      <circle cx="470" cy="205" r="150" fill="#8B5CF6" opacity=".12"/>
+      <rect class="sweep" x="0" y="0" width="160" height="380" fill="url(#sweep)"/>
+    </g>
+    <rect x="10" y="14" width="580" height="350" rx="22" fill="none" stroke="url(#holo)" stroke-width="1.6"/>
+    <text x="40" y="58" class="ctx">NXL Technologies</text>
+    <text x="40" y="98" class="ttl">Pipes</text>
+    <text x="40" y="138" class="desc">Turns websites into structured APIs</text><text x="40" y="163" class="desc">that AI agents can call, with async</text><text x="40" y="188" class="desc">workers and signed webhooks.</text>
+    <g><rect x="40" y="222" width="100" height="26" rx="13" class="chip"/><text x="90" y="239.5" class="chipt">Job queues</text></g><g><rect x="148" y="222" width="100" height="26" rx="13" class="chip"/><text x="198" y="239.5" class="chipt">PostgreSQL</text></g><g><rect x="40" y="256" width="139" height="26" rx="13" class="chip"/><text x="109.5" y="273.5" class="chipt">SSRF protection</text></g><g><rect x="187" y="256" width="53.2" height="26" rx="13" class="chip"/><text x="213.6" y="273.5" class="chipt">HMAC</text></g>
+    <g filter="url(#g)"><rect x="378" y="171" width="72" height="68" rx="9" class="win"/>
+      <line x1="378" y1="187" x2="450" y2="187" class="win"/>
+      <circle cx="388" cy="179" r="2.5" fill="#E879F9"/><circle cx="396" cy="179" r="2.5" fill="#8B5CF6"/><circle cx="404" cy="179" r="2.5" fill="#22D3EE"/>
+      <rect x="388" y="197" width="40" height="5" rx="2.5" fill="#C4B5FD" opacity=".5"/><rect x="388" y="209" width="52" height="5" rx="2.5" fill="#C4B5FD" opacity=".35"/><rect x="388" y="221" width="30" height="5" rx="2.5" fill="#C4B5FD" opacity=".35"/>
+      <line x1="452" y1="189" x2="510" y2="189" class="pipe"/><circle r="4" fill="#22D3EE"><animateMotion dur="1.8s" begin="0s" repeatCount="indefinite" path="M452 189H510"/></circle><line x1="452" y1="205" x2="510" y2="205" class="pipe"/><circle r="4" fill="#E879F9"><animateMotion dur="1.8s" begin="0.5s" repeatCount="indefinite" path="M452 205H510"/></circle><line x1="452" y1="221" x2="510" y2="221" class="pipe"/><circle r="4" fill="#22D3EE"><animateMotion dur="1.8s" begin="1s" repeatCount="indefinite" path="M452 221H510"/></circle>
+      <text x="544" y="221" class="brace">{ }</text>
+      <text x="414" y="267" class="cap">website</text><text x="544" y="267" class="cap">agent API</text></g>
+  </g>
+</svg>

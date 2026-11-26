@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 420 84" width="420" height="84" role="img" aria-labelledby="t d"><title id="t">Connect on LinkedIn</title><desc id="d">Button linking to Kiran D on LinkedIn</desc>
+  <defs>
+    <linearGradient id="holo" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="420" y2="0">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset=".5" stop-color="#8B5CF6"/><stop offset="1" stop-color="#E879F9"/>
+      <animateTransform attributeName="gradientTransform" type="translate" values="-140 0;140 0;-140 0" dur="6s" repeatCount="indefinite"/>
+    </linearGradient>
+    <filter id="g" filterUnits="userSpaceOnUse" x="0" y="0" width="420" height="84"><feGaussianBlur stdDeviation="7"/></filter>
+  </defs>
+  <style>
+    .glow{animation:pulse 2.6s ease-in-out infinite alternate}
+    @keyframes pulse{from{opacity:.25}to{opacity:.7}}
+    .t{font:700 22px 'Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;fill:#F5F3FF}
+    @media (prefers-reduced-motion: reduce){.glow{animation:none!important}}
+  </style>
+  <rect class="glow" x="14" y="14" width="392" height="56" rx="28" fill="url(#holo)" filter="url(#g)"/>
+  <rect x="12" y="12" width="396" height="60" rx="30" fill="#0E0930" stroke="url(#holo)" stroke-width="2"/>
+  <rect x="32" y="24" width="36" height="36" rx="8" fill="#0A66C2"/>
+  <text x="50" y="50" style="font:800 21px 'Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;fill:#fff;text-anchor:middle">in</text>
+  <text x="86" y="50" class="t">Connect on LinkedIn</text>
+</svg>
