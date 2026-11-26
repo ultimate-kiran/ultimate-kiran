@@ -616,6 +616,34 @@ function creds () {
 }
 
 // ---------------------------------------------------------------- LinkedIn button
+// ---------------------------------------------------------------- click-to-open buttons (used inside <summary>)
+function button (label, hint) {
+  const W = 560
+  const H = 76
+  return `${svgOpen(W, H, label, `${label}. ${hint}`)}
+  <defs>
+    <linearGradient id="shim" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="${GOLD}" stop-opacity="0"/><stop offset=".5" stop-color="#FFE9B8" stop-opacity=".9"/><stop offset="1" stop-color="${GOLD}" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="bc"><rect x="12" y="12" width="${W - 24}" height="${H - 24}" rx="2"/></clipPath>
+  </defs>
+  <style>
+    .shim{animation:shim 3.6s ease-in-out infinite}
+    @keyframes shim{0%,40%{transform:translateX(-220px)}100%{transform:translateX(${W + 40}px)}}
+    .plus{animation:nudge 3.6s ease-in-out infinite;transform-origin:${W - 50}px ${H / 2}px}
+    @keyframes nudge{0%,70%,100%{transform:scale(1)}80%{transform:scale(1.18)}}
+    ${reduced('.shim,.plus')}
+  </style>
+  <rect x="12.5" y="12.5" width="${W - 25}" height="${H - 25}" rx="2" fill="#000" stroke="${HAIR}"/>
+  <g clip-path="url(#bc)"><rect class="shim" x="0" y="${H - 14}" width="200" height="1.5" fill="url(#shim)"/></g>
+  <text x="36" y="${H / 2 + 6}" class="t">${esc(label)}</text>
+  <text x="${W - 92}" y="${H / 2 + 5}" class="when">${esc(hint)}</text>
+  <g class="plus"><rect x="${W - 64.5}" y="${H / 2 - 14.5}" width="29" height="29" rx="2" fill="none" stroke="${GOLD}"/>
+    <path d="M${W - 50} ${H / 2 - 7}V${H / 2 + 7}M${W - 57} ${H / 2}H${W - 43}" stroke="${GOLD}" stroke-width="1.6"/></g>
+</svg>
+`
+}
+
 function linkedin () {
   const W = 420
   const H = 84
@@ -717,3 +745,6 @@ for (const c of cards) write(`card-${c.id}.svg`, card(c))
 write('toolkit.svg', toolkit())
 write('creds.svg', creds())
 write('linkedin.svg', linkedin())
+write('btn-more-ai.svg', button('Show 3 more AI projects', 'click to open'))
+write('btn-fullstack.svg', button('Full-stack apps', 'click to open'))
+write('btn-opensource.svg', button('Open-source work on npm', 'click to open'))
