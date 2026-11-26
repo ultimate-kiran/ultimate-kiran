@@ -5,341 +5,510 @@ const fs = require('node:fs')
 const path = require('node:path')
 
 const C = {
-  ink: '#0A2342', // blueprint paper
-  inkLift: '#0F2D55', // raised plane
-  grid: '#1E4A7A',
-  chalk: '#E8F1FF',
-  steel: '#7FA7D6',
-  amber: '#FFB000',
+  space: '#07051A',
+  deep: '#120B33',
+  cyan: '#22D3EE',
+  violet: '#8B5CF6',
+  magenta: '#E879F9',
+  lav: '#C4B5FD',
+  white: '#F5F3FF',
 }
 const SANS = "'Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif"
-const MONO = "'Cascadia Code','Cascadia Mono',Consolas,'SFMono-Regular',Menlo,monospace"
+const MONO = "'Cascadia Code',Consolas,'SFMono-Regular',Menlo,monospace"
 const f = n => Math.round(n * 10) / 10
-const pct = n => `${f(n)}%`
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
 
-// isometric projection
-const iso = (ox, oy, s) => (x, y, z = 0) => [ox + (x - y) * s * 0.866, oy + (x + y) * s * 0.5 - z * s]
-const pts = list => list.map(([x, y]) => `${f(x)},${f(y)}`).join(' ')
+// seeded random so the art is stable between builds
+let seed = 7
+const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647
 
-// one isometric box: returns { top, left, right } polygon point strings
-const box = (P, x, y, w, d, h) => ({
-  top: pts([P(x, y, h), P(x + w, y, h), P(x + w, y + d, h), P(x, y + d, h)]),
-  right: pts([P(x + w, y, 0), P(x + w, y + d, 0), P(x + w, y + d, h), P(x + w, y, h)]),
-  left: pts([P(x, y + d, 0), P(x + w, y + d, 0), P(x + w, y + d, h), P(x, y + d, h)]),
-})
+const textW = (s, px, k = 0.56) => s.length * px * k
 
-const blueprintGrid = (w, h) => `
+// shared space background: nebula glow and twinkling stars
+const spaceBg = (W, H, stars = 90) => {
+  let s = ''
+  for (let i = 0; i < stars; i++) {
+    const r = rnd() < 0.85 ? 0.8 + rnd() * 0.6 : 1.5 + rnd() * 0.8
+    s += `<circle class="star" cx="${f(rnd() * W)}" cy="${f(rnd() * H)}" r="${f(r)}" style="animation-delay:-${f(rnd() * 6)}s;animation-duration:${f(3 + rnd() * 5)}s"/>`
+  }
+  return `
   <defs>
-    <pattern id="minor" width="20" height="20" patternUnits="userSpaceOnUse">
-      <path d="M20 0H0V20" fill="none" stroke="${C.grid}" stroke-width="0.6" opacity="0.35"/>
-    </pattern>
-    <pattern id="major" width="100" height="100" patternUnits="userSpaceOnUse">
-      <rect width="100" height="100" fill="url(#minor)"/>
-      <path d="M100 0H0V100" fill="none" stroke="${C.grid}" stroke-width="1" opacity="0.6"/>
-    </pattern>
-    <radialGradient id="vignette" cx="50%" cy="45%" r="75%">
-      <stop offset="60%" stop-color="${C.ink}" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#051428" stop-opacity="0.85"/>
-    </radialGradient>
-    <filter id="glow" x="-200%" y="-200%" width="500%" height="500%">
-      <feGaussianBlur stdDeviation="4" result="b"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
+    <radialGradient id="neb1" cx="72%" cy="45%" r="55%"><stop offset="0" stop-color="${C.violet}" stop-opacity=".35"/><stop offset="1" stop-color="${C.violet}" stop-opacity="0"/></radialGradient>
+    <radialGradient id="neb2" cx="20%" cy="85%" r="50%"><stop offset="0" stop-color="${C.cyan}" stop-opacity=".16"/><stop offset="1" stop-color="${C.cyan}" stop-opacity="0"/></radialGradient>
+    <linearGradient id="spaceGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B0724"/><stop offset="1" stop-color="${C.space}"/></linearGradient>
   </defs>
-  <rect width="${w}" height="${h}" fill="${C.ink}"/>
-  <rect width="${w}" height="${h}" fill="url(#major)"/>
-  <rect width="${w}" height="${h}" fill="url(#vignette)"/>`
+  <rect width="${W}" height="${H}" rx="18" fill="url(#spaceGrad)"/>
+  <rect width="${W}" height="${H}" rx="18" fill="url(#neb1)"/>
+  <rect width="${W}" height="${H}" rx="18" fill="url(#neb2)"/>
+  <g fill="${C.white}">${s}</g>`
+}
+const starCss = `.star{opacity:.25;animation:tw 5s ease-in-out infinite alternate}@keyframes tw{from{opacity:.12}to{opacity:.9}}`
+const reduced = sel => `@media (prefers-reduced-motion: reduce){${sel}{animation:none!important}}`
 
-// ---------------------------------------------------------------- hero
+const svgOpen = (W, H, title, desc) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="t d"><title id="t">${esc(title)}</title><desc id="d">${esc(desc)}</desc>`
+
+// ---------------------------------------------------------------- hero: rotating 3D neural network
 function hero () {
   const W = 1200
   const H = 600
-  const CYCLE = 12 // seconds per agent run
+  const DUR = 36 // seconds per full turn
+  const FRAMES = 72
+  const CX = 868
+  const CY = 300
+  const S = 118
+  const D = 5.2
+  const TILT = 0.38
 
-  // plotter-drawn name: each letter is a set of strokes on a 120-unit cap height
-  const letters = [
-    { w: 76, d: ['M0 0V120', 'M72 0L4 70', 'M24 48L78 120'] },
-    { w: 0, d: ['M0 0V120'] },
-    { w: 74, d: ['M0 120V0H44A30 30 0 0 1 44 60H0', 'M36 60L76 120'] },
-    { w: 84, d: ['M0 120L42 0L84 120', 'M15 78H69'] },
-    { w: 76, d: ['M0 120V0L76 120V0'] },
-  ]
-  const nameX = 64
-  const nameY = 70
-  const gap = 38
-  let cursor = nameX
-  let strokes = ''
-  let sparks = ''
-  let i = 0
-  const strokeCount = letters.reduce((n, l) => n + l.d.length, 0)
-  const drawDur = 2.6
-  for (const l of letters) {
-    for (const d of l.d) {
-      const delay = f(0.3 + (i * drawDur) / strokeCount)
-      const t = `translate(${cursor} ${nameY})`
-      strokes += `<path class="pen" d="${d}" transform="${t}" pathLength="1" style="animation-delay:${delay}s"/>`
-      sparks += `<path class="spark" d="${d}" transform="${t}" pathLength="1" style="animation-delay:${delay}s"/>`
-      i++
+  const layersX = [-1.65, -0.55, 0.55, 1.65]
+  const counts = [5, 7, 7, 5]
+  const radius = [0.85, 1.25, 1.25, 0.85]
+  const layerColor = [C.cyan, '#60A5FA', C.violet, C.magenta]
+  const nodes = []
+  counts.forEach((n, l) => {
+    for (let j = 0; j < n; j++) {
+      const a = (2 * Math.PI * j) / n + l * 0.4
+      nodes.push({ l, j, x: layersX[l], y: radius[l] * Math.cos(a), z: radius[l] * Math.sin(a) })
     }
-    cursor += l.w + gap
-  }
-  const nameEnd = cursor - gap
-  const capY = nameY
-  const baseY = nameY + 120
-
-  // agent graph on an isometric plane
-  const P = iso(745, 150, 50)
-  const N = {
-    start: { x: 0, y: 0, h: 0.35 },
-    plan: { x: 2.4, y: 0, h: 0.45 },
-    claude: { x: 4.8, y: 0, h: 0.85 },
-    tools: { x: 4.8, y: 2.7, h: 0.45 },
-    end: { x: 7.2, y: 0, h: 0.35 },
-  }
-  const S = 1.2 // node footprint
-  const center = (n, z = 0) => P(N[n].x + S / 2, N[n].y + S / 2, z)
-
-  // plane + iso grid
-  const px0 = -0.5; const px1 = 8.9; const py0 = -0.6; const py1 = 4.2
-  let plane = `<polygon points="${pts([P(px0, py0), P(px1, py0), P(px1, py1), P(px0, py1)])}" fill="${C.inkLift}" stroke="${C.grid}" stroke-width="1.2"/>`
-  for (let x = px0 + 0.5; x < px1; x += 0.5) {
-    plane += `<line x1="${f(P(x, py0)[0])}" y1="${f(P(x, py0)[1])}" x2="${f(P(x, py1)[0])}" y2="${f(P(x, py1)[1])}"/>`
-  }
-  for (let y = py0 + 0.5; y < py1; y += 0.5) {
-    plane += `<line x1="${f(P(px0, y)[0])}" y1="${f(P(px0, y)[1])}" x2="${f(P(px1, y)[0])}" y2="${f(P(px1, y)[1])}"/>`
-  }
-
-  // edges on the plane, trimmed to the node footprints
-  const edge = (a, b, off = 0) => {
-    const ax = N[a].x + S / 2; const ay = N[a].y + S / 2
-    const bx = N[b].x + S / 2; const by = N[b].y + S / 2
-    const len = Math.hypot(bx - ax, by - ay)
-    const ux = (bx - ax) / len; const uy = (by - ay) / len
-    const trim = S / 2 + 0.18
-    const ox = -uy * off; const oy = ux * off
-    const p1 = P(ax + ux * trim + ox, ay + uy * trim + oy)
-    const p2 = P(bx - ux * trim + ox, by - uy * trim + oy)
-    return `<line x1="${f(p1[0])}" y1="${f(p1[1])}" x2="${f(p2[0])}" y2="${f(p2[1])}" marker-end="url(#arrow)"/>`
-  }
-  const edges = [
-    edge('start', 'plan'), edge('plan', 'claude'), edge('claude', 'end'),
-    edge('claude', 'tools', 0.22), edge('tools', 'claude', 0.22),
-  ].join('')
-
-  // the run: node visits in order, one hop every STEP seconds
-  const route = ['start', 'plan', 'claude', 'tools', 'claude', 'tools', 'claude', 'end']
-  const STEP = 1.3
-  const arrive = route.map((_, k) => k * STEP)
-  const runEnd = arrive[arrive.length - 1]
-
-  // packet path through node centres, keyPoints by cumulative length
-  const routePts = route.map(n => center(n, 0.02))
-  let total = 0
-  const cum = [0]
-  for (let k = 1; k < routePts.length; k++) {
-    total += Math.hypot(routePts[k][0] - routePts[k - 1][0], routePts[k][1] - routePts[k - 1][1])
-    cum.push(total)
-  }
-  const keyPoints = [...cum.map(c => (c / total).toFixed(4)), '1'].join(';')
-  const keyTimes = [...arrive.map(t => (t / CYCLE).toFixed(4)), '1'].join(';')
-  const routeD = 'M' + routePts.map(p => `${f(p[0])} ${f(p[1])}`).join('L')
-
-  // node blocks: light up at every arrival
-  const drawOrder = ['start', 'plan', 'tools', 'claude', 'end'] // back to front
-  let nodes = ''
-  let nodeCss = ''
-  for (const n of drawOrder) {
-    const { x, y, h } = N[n]
-    const b = box(P, x, y, S, S, h)
-    const visits = arrive.filter((_, k) => route[k] === n).map(t => (t / CYCLE) * 100)
-    const frames = ['0%{fill:#143a68;transform:translateY(0)}']
-    for (const v of visits) {
-      frames.push(`${pct(Math.max(v - 0.4, 0.1))}{fill:#143a68;transform:translateY(0)}`)
-      frames.push(`${pct(v + 1.2)}{fill:${C.amber};transform:translateY(-7px)}`)
-      frames.push(`${pct(v + 7)}{fill:#143a68;transform:translateY(0)}`)
-    }
-    frames.push('100%{fill:#143a68;transform:translateY(0)}')
-    nodeCss += `@keyframes lit-${n}{${frames.join('')}}`
-    nodeCss += `.n-${n} .top{animation:lit-${n} ${CYCLE}s linear infinite}`
-    nodeCss += `.n-${n}{animation:lift-${n} ${CYCLE}s linear infinite}`
-    nodeCss += `@keyframes lift-${n}{${frames.map(fr => fr.replace(/fill:[^;]+;/, '')).join('')}}`
-    const label = P(x + S / 2, y + S / 2, h)
-    nodes += `<g class="node n-${n}">
-      <polygon class="left" points="${b.left}"/>
-      <polygon class="right" points="${b.right}"/>
-      <polygon class="top" points="${b.top}"/>
-      <text x="${f(label[0])}" y="${f(label[1] - 30)}" class="nlabel">${n}</text>
-    </g>`
-  }
-
-  // trace log: the run behind npm/cli pull request #10362
-  const log = [
-    ['start', 'issue: uninstall says "up to date"'],
-    ['plan', 'reproduce, find the cause, fix, test'],
-    ['claude', 'the reify diff never lists removals'],
-    ['tools', 'repro: 4 removed, 0 reported'],
-    ['claude', 'report the orphan sweep in the diff'],
-    ['tools', 'tests pass, coverage 100%'],
-    ['claude', 'write up the change'],
-    ['end', 'pull request #10362 opened'],
-  ]
-  const logX = 64
-  const logY = 404
-  let logRows = ''
-  let logCss = ''
-  log.forEach(([who, what], k) => {
-    const v = (arrive[k] / CYCLE) * 100
-    logCss += `@keyframes row${k}{0%,${pct(Math.max(v - 0.2, 0))}{opacity:0;transform:translateX(-6px)}${pct(v + 2)},93%{opacity:1;transform:translateX(0)}100%{opacity:0}}`
-    logCss += `.row${k}{animation:row${k} ${CYCLE}s linear infinite}`
-    logRows += `<g class="row row${k}"><text x="${logX}" y="${logY + k * 22}"><tspan class="who">${who.padEnd(7, ' ')}</tspan><tspan>${what}</tspan></text></g>`
   })
+  const idx = (l, j) => nodes.findIndex(n => n.l === l && n.j === j)
+  const edges = []
+  for (let l = 0; l < 3; l++) {
+    const n1 = counts[l]; const n2 = counts[l + 1]
+    for (let j = 0; j < n1; j++) {
+      const k0 = Math.round((j * n2) / n1)
+      for (const dk of [-1, 0, 1]) edges.push({ a: idx(l, j), b: idx(l + 1, (k0 + dk + n2) % n2), l })
+    }
+  }
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="t d">
-  <title id="t">Kiran, forward deployed engineer</title>
-  <desc id="d">The name Kiran drawn by a plotter on a blueprint, next to an isometric agent graph (start, plan, claude, tools, end) that runs in a loop while a trace log records each step.</desc>
-  ${blueprintGrid(W, H)}
+  const project = (p, th) => {
+    const x1 = p.x * Math.cos(th) + p.z * Math.sin(th)
+    const z1 = -p.x * Math.sin(th) + p.z * Math.cos(th)
+    const y2 = p.y * Math.cos(TILT) - z1 * Math.sin(TILT)
+    const z2 = p.y * Math.sin(TILT) + z1 * Math.cos(TILT)
+    const k = D / (D + z2)
+    return { X: CX + S * x1 * k, Y: CY + S * y2 * k, k }
+  }
+  const frames = []
+  for (let i = 0; i <= FRAMES; i++) {
+    const th = (2 * Math.PI * i) / FRAMES
+    frames.push(nodes.map(p => project(p, th)))
+  }
+  const kMin = 0.72; const kMax = 1.45
+  const depth = k => Math.max(0, Math.min(1, (k - kMin) / (kMax - kMin)))
+  const anim = (attr, vals) => `<animate attributeName="${attr}" dur="${DUR}s" repeatCount="indefinite" values="${vals.join(';')}"/>`
+
+  // edges live in defs and are drawn twice: a faint line and a travelling pulse
+  let defs = ''
+  let edgeUses = ''
+  let pulseUses = ''
+  edges.forEach((e, i) => {
+    const x1 = frames.map(fr => f(fr[e.a].X)); const y1 = frames.map(fr => f(fr[e.a].Y))
+    const x2 = frames.map(fr => f(fr[e.b].X)); const y2 = frames.map(fr => f(fr[e.b].Y))
+    const op = frames.map(fr => (0.12 + 0.55 * depth((fr[e.a].k + fr[e.b].k) / 2)).toFixed(2))
+    defs += `<line id="e${i}" pathLength="1" x1="${x1[0]}" y1="${y1[0]}" x2="${x2[0]}" y2="${y2[0]}">${anim('x1', x1)}${anim('y1', y1)}${anim('x2', x2)}${anim('y2', y2)}${anim('stroke-opacity', op)}</line>`
+    edgeUses += `<use href="#e${i}" xlink:href="#e${i}" class="edge"/>`
+    pulseUses += `<use href="#e${i}" xlink:href="#e${i}" class="pulse p${e.l}" style="animation-delay:${f(e.l * 0.75 + rnd() * 0.25)}s"/>`
+  })
+  let nodeEls = ''
+  nodes.forEach((n, i) => {
+    const cx = frames.map(fr => f(fr[i].X)); const cy = frames.map(fr => f(fr[i].Y))
+    const r = frames.map(fr => f(3.2 + 6.4 * depth(fr[i].k)))
+    const op = frames.map(fr => (0.35 + 0.65 * depth(fr[i].k)).toFixed(2))
+    nodeEls += `<circle class="node l${n.l}" fill="${layerColor[n.l]}" cx="${cx[0]}" cy="${cy[0]}" r="${r[0]}">${anim('cx', cx)}${anim('cy', cy)}${anim('r', r)}${anim('opacity', op)}</circle>`
+  })
+  // node flash when the forward-pass wave reaches its layer
+  const PASS = 4.5
+  let flashCss = ''
+  for (let l = 0; l < 4; l++) {
+    const at = ((l * 0.75 + 0.55) / PASS) * 100
+    flashCss += `.l${l}{animation:fl${l} ${PASS}s linear infinite}@keyframes fl${l}{0%,${f(Math.max(at - 2, 0))}%,${f(at + 14)}%,100%{fill:${layerColor[l]}}${f(at + 3)}%{fill:#fff}}`
+  }
+
+  const name = 'Kiran D'
+  return `${svgOpen(W, H, 'Kiran D, AI/ML engineer', 'A rotating 3D neural network made of glowing nodes, with signals passing forward through its layers, beside the name Kiran D in chrome type.')}
+  ${spaceBg(W, H, 110)}
   <defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0 1L9 5L0 9" fill="none" stroke="${C.steel}" stroke-width="1.6"/>
-    </marker>
+    ${defs}
+    <filter id="glow" filterUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}">
+      <feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="soft" filterUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}"><feGaussianBlur stdDeviation="22"/></filter>
+    <linearGradient id="chrome" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/><stop offset=".42" stop-color="#E0E7FF"/><stop offset=".5" stop-color="${C.lav}"/>
+      <stop offset=".58" stop-color="#A78BFA"/><stop offset=".8" stop-color="#67E8F9"/><stop offset="1" stop-color="#F0FDFF"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".95"/><stop offset=".65" stop-color="#fff" stop-opacity="0"/>
+      <animateTransform attributeName="gradientTransform" type="translate" values="-1 0;-1 0;1.2 0;1.2 0" keyTimes="0;.45;.75;1" dur="5s" repeatCount="indefinite"/>
+    </linearGradient>
+    <linearGradient id="rule" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${C.cyan}"/><stop offset=".5" stop-color="${C.violet}"/><stop offset="1" stop-color="${C.magenta}" stop-opacity="0"/></linearGradient>
   </defs>
   <style>
-    .guide{stroke:${C.steel};stroke-width:1;stroke-dasharray:2 6;opacity:.55}
-    .dim{stroke:${C.steel};stroke-width:1.2;fill:none}
-    .dimtext{font:500 17px ${SANS};fill:${C.steel};letter-spacing:.4px}
-    .pen{fill:none;stroke:${C.chalk};stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1 1;stroke-dashoffset:0;animation:draw .55s cubic-bezier(.6,.1,.3,1) both}
-    .spark{fill:none;stroke:${C.amber};stroke-width:12;stroke-linecap:round;stroke-dasharray:0 1;opacity:0;filter:url(#glow);animation:spark .55s cubic-bezier(.6,.1,.3,1) both}
-    @keyframes draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
-    @keyframes spark{0%{stroke-dasharray:.001 1;stroke-dashoffset:0;opacity:1}99%{stroke-dasharray:.001 1;stroke-dashoffset:-.999;opacity:1}100%{opacity:0}}
-    .lede{font:600 27px ${SANS};fill:${C.chalk}}
-    .sub{font:400 19px ${SANS};fill:${C.steel}}
-    .plane line{stroke:${C.grid};stroke-width:.8;opacity:.7}
-    .edges line{stroke:${C.steel};stroke-width:2;stroke-dasharray:6 5;animation:flow 1.2s linear infinite}
-    @keyframes flow{to{stroke-dashoffset:-11}}
-    .node .left{fill:#0c2748;stroke:${C.steel};stroke-width:1.2}
-    .node .right{fill:#11335d;stroke:${C.steel};stroke-width:1.2}
-    .node .top{fill:#143a68;stroke:${C.chalk};stroke-width:1.4}
-    .nlabel{font:600 16px ${MONO};fill:${C.chalk};text-anchor:middle}
-    .row text{font:14.5px ${MONO};fill:${C.chalk}}
-    .row .who{fill:${C.amber}}
-    .logrule{stroke:${C.grid};stroke-width:1}
-    .logtitle{font:600 13px ${MONO};fill:${C.steel}}
-    ${nodeCss}
-    ${logCss}
-    @media (prefers-reduced-motion: reduce){
-      .pen,.spark,.edges line,.node,.node .top,.row{animation:none!important}
-      .spark{opacity:0}
-    }
+    ${starCss}
+    .edge{stroke:${C.lav};stroke-width:1.1}
+    .pulse{stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-dasharray:.07 .93;stroke-dashoffset:.07;opacity:0;animation:fire ${PASS}s linear infinite}
+    @keyframes fire{0%{stroke-dashoffset:.07;opacity:1}16%{stroke-dashoffset:-.93;opacity:1}17%,100%{stroke-dashoffset:-.93;opacity:0}}
+    ${flashCss}
+    .rise{opacity:0;animation:rise 1.1s cubic-bezier(.2,.7,.2,1) forwards}
+    @keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+    .name{font:800 124px ${SANS};letter-spacing:-3px}
+    .role{font:600 30px ${SANS};fill:${C.white}}
+    .line{font:400 21px ${SANS};fill:${C.lav}}
+    .where{font:500 17px ${SANS};fill:#67E8F9}
+    ${reduced('.star,.pulse,.node,.rise')}
+    @media (prefers-reduced-motion: reduce){.rise{opacity:1}}
   </style>
 
-  <!-- drafting guidelines and the plotter-drawn name -->
-  <line class="guide" x1="40" y1="${capY}" x2="${nameEnd + 40}" y2="${capY}"/>
-  <line class="guide" x1="40" y1="${baseY}" x2="${nameEnd + 40}" y2="${baseY}"/>
-  <g>${strokes}${sparks}</g>
-
-  <!-- dimension line under the name carries the role -->
-  <g class="dim">
-    <path d="M${nameX} ${baseY + 22}V${baseY + 42}M${nameEnd} ${baseY + 22}V${baseY + 42}"/>
-    <path d="M${nameX} ${baseY + 32}H${nameX + 36}M${nameEnd - 36} ${baseY + 32}H${nameEnd}"/>
+  <circle cx="${CX}" cy="${CY}" r="190" fill="${C.violet}" opacity=".22" filter="url(#soft)"/>
+  <g filter="url(#glow)">
+    <g>${edgeUses}</g>
+    <g>${pulseUses}</g>
+    <g>${nodeEls}</g>
   </g>
-  <text class="dimtext" x="${(nameX + nameEnd) / 2}" y="${baseY + 38}" text-anchor="middle">forward deployed engineer</text>
 
-  <text class="lede" x="${nameX}" y="${baseY + 96}">I build AI agents that leave the demo</text>
-  <text class="lede" x="${nameX}" y="${baseY + 130}">and ship to production.</text>
-
-  <!-- trace log -->
-  <line class="logrule" x1="${logX}" y1="${logY - 28}" x2="${logX + 430}" y2="${logY - 28}"/>
-  <text class="logtitle" x="${logX}" y="${logY - 36}">agent run, npm/cli#10362</text>
-  ${logRows}
-
-  <!-- isometric agent graph -->
-  <g class="plane">${plane}</g>
-  <g class="edges">${edges}</g>
-  ${nodes}
-  <circle r="7" fill="${C.amber}" filter="url(#glow)">
-    <animateMotion dur="${CYCLE}s" repeatCount="indefinite" calcMode="linear" keyPoints="${keyPoints}" keyTimes="${keyTimes}" path="${routeD}"/>
-    <animate attributeName="opacity" dur="${CYCLE}s" repeatCount="indefinite" values="1;1;0;0" keyTimes="0;${((runEnd + 1.2) / CYCLE).toFixed(3)};${((runEnd + 1.6) / CYCLE).toFixed(3)};1"/>
-  </circle>
+  <g class="rise" style="animation-delay:.1s">
+    <text class="name" x="64" y="250" fill="url(#chrome)">${name}</text>
+    <text class="name" x="64" y="250" fill="url(#shine)" opacity=".55">${name}</text>
+  </g>
+  <rect class="rise" style="animation-delay:.35s" x="68" y="282" width="360" height="3" rx="1.5" fill="url(#rule)"/>
+  <text class="role rise" style="animation-delay:.45s" x="66" y="336">AI/ML engineer</text>
+  <text class="line rise" style="animation-delay:.6s" x="66" y="378">I build multi-agent systems and RAG pipelines</text>
+  <text class="line rise" style="animation-delay:.7s" x="66" y="408">that hold up in production.</text>
+  <text class="where rise" style="animation-delay:.85s" x="66" y="462">Junior AI Developer at NXL Technologies, Chennai</text>
 </svg>
 `
 }
 
-// ---------------------------------------------------------------- stack
-function stack () {
-  const W = 1200
-  const H = 520
-  const P = iso(370, 76, 36)
-  const slabW = 5.2; const slabD = 3.4; const slabH = 0.34
-  const gapPx = 84
-  const layers = [
-    { name: 'Claude', what: 'Reasoning, tool use and long context', accent: true },
-    { name: 'LangGraph', what: 'Agent loops, shared state, retries, human in the loop' },
-    { name: 'LangChain', what: 'Tools, retrievers and model integrations' },
-    { name: 'Python, TypeScript, Node.js', face: 'Python, TS, Node', what: 'The services the agents run inside', small: true },
-  ]
-  // amber bus linking the label dots: requests flow down the stack
-  const busX = P(slabW, 0, slabH / 2)[0] + 8
-  const busTop = P(slabW, 0, slabH / 2)[1]
-  const busBottom = busTop + (layers.length - 1) * gapPx
-  let body = ''
-  let css = ''
-  // draw bottom first so upper slabs cover the beams
-  for (let k = layers.length - 1; k >= 0; k--) {
-    const L = layers[k]
-    const dy = k * gapPx
-    const b = box(P, 0, 0, slabW, slabD, slabH)
-    const corner = P(slabW, 0, slabH / 2) // right corner, leader start
-    const labelX = 720
-    // label text on the slab's top face, laid flat in isometric space
-    const o = P(0.45, slabD - 0.55, slabH)
-    const fontSize = L.small ? 15 : 22
-    // the position lives on the outer group; the breathing CSS transform on the inner one
-    body += `<g class="slab s${k}" transform="translate(0 ${dy})">
-      <g class="breath">
-        <polygon class="left" points="${b.left}"/>
-        <polygon class="right" points="${b.right}"/>
-        <polygon class="top${L.accent ? ' accent' : ''}" points="${b.top}"/>
-        <text class="face" font-size="${fontSize}" transform="matrix(0.866 0.5 -0.866 0.5 ${f(o[0])} ${f(o[1])})">${L.face || L.name}</text>
-        <path class="leader" d="M${f(corner[0] + 8)} ${f(corner[1])}H${labelX - 22}"/>
-        <circle class="dot" cx="${f(corner[0] + 8)}" cy="${f(corner[1])}" r="3.5"/>
-      </g>
-      <text class="lname" x="${labelX}" y="${f(corner[1] + 2)}">${L.name}</text>
-      <text class="lwhat" x="${labelX}" y="${f(corner[1] + 28)}">${L.what}</text>
-    </g>`
-    const amp = (layers.length - 1 - k) * 4 + 2
-    css += `.s${k} .breath{animation:breathe${k} 6s ease-in-out infinite}`
-    css += `@keyframes breathe${k}{0%,100%{transform:translateY(0)}50%{transform:translateY(-${amp}px)}}`
+// ---------------------------------------------------------------- project cards
+const chipRow = (chips, x, y, maxW) => {
+  let cx = x; let cy = y; let out = ''
+  for (const c of chips) {
+    const w = textW(c, 13, 0.6) + 22
+    if (cx + w > x + maxW) { cx = x; cy += 34 }
+    out += `<g><rect x="${f(cx)}" y="${cy}" width="${f(w)}" height="26" rx="13" class="chip"/><text x="${f(cx + w / 2)}" y="${cy + 17.5}" class="chipt">${esc(c)}</text></g>`
+    cx += w + 8
   }
+  return out
+}
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="t d">
-  <title id="t">What I build with</title>
-  <desc id="d">An exploded isometric stack: Claude for reasoning, LangGraph for agent loops and state, LangChain for tools and integrations, and Python, TypeScript and Node.js underneath.</desc>
-  ${blueprintGrid(W, H)}
+const visuals = {
+  // eight agents orbiting an orchestrator
+  vaic (cx, cy) {
+    let spokes = ''; let agents = ''
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2
+      const x = cx + Math.cos(a) * 72; const y = cy + Math.sin(a) * 72
+      spokes += `<line x1="${cx}" y1="${cy}" x2="${f(x)}" y2="${f(y)}" class="spoke"/>`
+      agents += `<circle cx="${f(x)}" cy="${f(y)}" r="9" fill="${i % 2 ? C.magenta : C.cyan}" class="agent" style="animation-delay:${f(i * 0.35)}s"/>`
+    }
+    return `<circle cx="${cx}" cy="${cy}" r="72" class="orbit"/>
+      <circle cx="${cx}" cy="${cy}" r="24" fill="none" stroke="${C.cyan}" stroke-width="2" opacity=".7"><animate attributeName="r" values="24;92" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values=".7;0" dur="3s" repeatCount="indefinite"/></circle>
+      <g><animateTransform attributeName="transform" type="rotate" from="0 ${cx} ${cy}" to="360 ${cx} ${cy}" dur="20s" repeatCount="indefinite"/>${spokes}${agents}</g>
+      <circle cx="${cx}" cy="${cy}" r="24" fill="url(#core)"/>`
+  },
+  // website turned into callable API
+  pipes (cx, cy) {
+    const bx = cx - 92; const by = cy - 34
+    let packets = ''
+    ;[-16, 0, 16].forEach((dy, i) => {
+      packets += `<line x1="${cx - 18}" y1="${cy + dy}" x2="${cx + 40}" y2="${cy + dy}" class="pipe"/>`
+      packets += `<circle r="4" fill="${i === 1 ? C.magenta : C.cyan}"><animateMotion dur="1.8s" begin="${f(i * 0.5)}s" repeatCount="indefinite" path="M${cx - 18} ${cy + dy}H${cx + 40}"/></circle>`
+    })
+    return `<rect x="${bx}" y="${by}" width="72" height="68" rx="9" class="win"/>
+      <line x1="${bx}" y1="${by + 16}" x2="${bx + 72}" y2="${by + 16}" class="win"/>
+      <circle cx="${bx + 10}" cy="${by + 8}" r="2.5" fill="${C.magenta}"/><circle cx="${bx + 18}" cy="${by + 8}" r="2.5" fill="${C.violet}"/><circle cx="${bx + 26}" cy="${by + 8}" r="2.5" fill="${C.cyan}"/>
+      <rect x="${bx + 10}" y="${by + 26}" width="40" height="5" rx="2.5" fill="${C.lav}" opacity=".5"/><rect x="${bx + 10}" y="${by + 38}" width="52" height="5" rx="2.5" fill="${C.lav}" opacity=".35"/><rect x="${bx + 10}" y="${by + 50}" width="30" height="5" rx="2.5" fill="${C.lav}" opacity=".35"/>
+      ${packets}
+      <text x="${cx + 74}" y="${cy + 16}" class="brace">{ }</text>
+      <text x="${bx + 36}" y="${by + 96}" class="cap">website</text><text x="${cx + 74}" y="${by + 96}" class="cap">agent API</text>`
+  },
+  // vector + keyword retrieval fused, then checked by a guard
+  rag (cx, cy) {
+    let vec = ''
+    for (let i = 0; i < 9; i++) vec += `<circle cx="${f(cx - 100 + (i % 3) * 13)}" cy="${f(cy - 62 + Math.floor(i / 3) * 13)}" r="3.6" fill="${C.cyan}" opacity="${f(0.5 + (i % 4) * 0.15)}"/>`
+    let bm = ''
+    for (let i = 0; i < 3; i++) bm += `<rect x="${cx - 104}" y="${cy + 40 + i * 12}" width="${36 - i * 8}" height="5" rx="2.5" fill="${C.magenta}" opacity=".75"/>`
+    const p1 = `M${cx - 62} ${cy - 50}C${cx - 30} ${cy - 50} ${cx - 34} ${cy} ${cx - 8} ${cy}`
+    const p2 = `M${cx - 62} ${cy + 52}C${cx - 30} ${cy + 52} ${cx - 34} ${cy} ${cx - 8} ${cy}`
+    const p3 = `M${cx + 8} ${cy}H${cx + 50}`
+    const shield = `M${cx + 78} ${cy - 40}L${cx + 108} ${cy - 28}V${cy + 2}C${cx + 108} ${cy + 24} ${cx + 94} ${cy + 36} ${cx + 78} ${cy + 44}C${cx + 62} ${cy + 36} ${cx + 48} ${cy + 24} ${cx + 48} ${cy + 2}V${cy - 28}Z`
+    return `${vec}${bm}
+      <path d="${p1}" class="flow"/><path d="${p2}" class="flow"/><path d="${p3}" class="flow"/>
+      <circle r="4" fill="${C.cyan}"><animateMotion dur="2.4s" repeatCount="indefinite" path="${p1}"/></circle>
+      <circle r="4" fill="${C.magenta}"><animateMotion dur="2.4s" begin=".4s" repeatCount="indefinite" path="${p2}"/></circle>
+      <circle cx="${cx}" cy="${cy}" r="9" fill="url(#core)"/>
+      <path d="${shield}" fill="rgba(139,92,246,.18)" stroke="${C.violet}" stroke-width="2.2"/>
+      <path d="M${cx + 64} ${cy + 2}L${cx + 74} ${cy + 13}L${cx + 94} ${cy - 10}" class="check" pathLength="1"/>
+      <text x="${cx - 87}" y="${cy - 80}" class="cap">vector</text><text x="${cx - 87}" y="${cy + 92}" class="cap">BM25</text><text x="${cx + 78}" y="${cy + 66}" class="cap">guard</text>`
+  },
+  // OCR scan pulls structured fields out of a document
+  doc (cx, cy) {
+    const x = cx - 104; const y = cy - 66
+    let lines = ''
+    for (let i = 0; i < 6; i++) lines += `<rect x="${x + 14}" y="${y + 24 + i * 15}" width="${[58, 46, 62, 38, 54, 30][i]}" height="5" rx="2.5" fill="${C.lav}" opacity=".45"/>`
+    const fields = ['type: invoice', 'total found', 'confidence .97']
+    let pills = ''
+    fields.forEach((t, i) => {
+      const w = textW(t, 12, 0.6) + 18
+      pills += `<g class="field" style="animation-delay:${f(0.6 + i * 0.45)}s"><rect x="${cx + 4}" y="${cy - 46 + i * 36}" width="${f(w)}" height="26" rx="13" class="chip"/><text x="${f(cx + 4 + w / 2)}" y="${cy - 29 + i * 36}" class="chipt" style="font-size:12px">${t}</text></g>`
+    })
+    return `<path d="M${x} ${y}H${x + 70}L${x + 90} ${y + 20}V${y + 132}H${x}Z" class="win"/><path d="M${x + 70} ${y}V${y + 20}H${x + 90}" class="win"/>
+      ${lines}
+      <rect x="${x - 6}" y="${y}" width="102" height="10" rx="5" fill="url(#scan)" class="scan"/>
+      <path d="M${x + 96} ${cy}H${cx - 2}" class="flow"/>
+      ${pills}`
+  },
+  // federated learning: clients send updates to an aggregator, which sends the global model back
+  fed (cx, cy) {
+    let out = ''
+    for (let i = 0; i < 5; i++) {
+      const a = -Math.PI / 2 + (i / 5) * Math.PI * 2
+      const x = f(cx + Math.cos(a) * 82); const y = f(cy + Math.sin(a) * 74)
+      out += `<line x1="${x}" y1="${y}" x2="${cx}" y2="${cy}" class="spoke"/>`
+      out += `<rect x="${f(x - 11)}" y="${f(y - 11)}" width="22" height="22" rx="6" fill="${C.deep}" stroke="${C.cyan}" stroke-width="2"/>`
+      out += `<circle r="3.6" fill="${C.cyan}"><animateMotion dur="3s" begin="${f(i * 0.12)}s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;.45;1" calcMode="linear" path="M${x} ${y}L${cx} ${cy}"/></circle>`
+      out += `<circle r="3.6" fill="${C.magenta}"><animateMotion dur="3s" begin="${f(1.5 + i * 0.12)}s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;.45;1" calcMode="linear" path="M${cx} ${cy}L${x} ${y}"/></circle>`
+    }
+    return `${out}<circle cx="${cx}" cy="${cy}" r="20" fill="url(#core)"/>`
+  },
+}
+
+function card ({ id, context, title, lines, chips, visual, delay }) {
+  const W = 600
+  const H = 380
+  // wrap the title to fit beside the visual
+  const words = title.split(' '); const tl = ['']
+  for (const w of words) { const t = (tl[tl.length - 1] + ' ' + w).trim(); if (textW(t, 29, 0.56) > 330 && tl[tl.length - 1]) tl.push(w); else tl[tl.length - 1] = t }
+  const descY = 98 + (tl.length - 1) * 34 + 40
+  const chipY = descY + (lines.length - 1) * 25 + 34
+  return `${svgOpen(W, H, title, `${context}. ${lines.join(' ')}`)}
+  <defs>
+    <linearGradient id="cardBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#170E40"/><stop offset="1" stop-color="#090620"/></linearGradient>
+    <linearGradient id="holo" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${W}" y2="${H}">
+      <stop offset="0" stop-color="${C.cyan}"/><stop offset=".5" stop-color="${C.violet}"/><stop offset="1" stop-color="${C.magenta}"/>
+      <animateTransform attributeName="gradientTransform" type="rotate" from="0 300 170" to="360 300 170" dur="10s" repeatCount="indefinite"/>
+    </linearGradient>
+    <linearGradient id="sweep" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".09"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <radialGradient id="core"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="${C.cyan}"/><stop offset="1" stop-color="${C.violet}"/></radialGradient>
+    <linearGradient id="scan" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${C.cyan}" stop-opacity="0"/><stop offset=".5" stop-color="${C.cyan}"/><stop offset="1" stop-color="${C.cyan}" stop-opacity="0"/></linearGradient>
+    <clipPath id="clip"><rect x="10" y="14" width="580" height="350" rx="22"/></clipPath>
+    <filter id="g" filterUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
   <style>
-    .left{fill:#0c2748;stroke:${C.steel};stroke-width:1.2}
-    .right{fill:#11335d;stroke:${C.steel};stroke-width:1.2}
-    .top{fill:#143a68;stroke:${C.chalk};stroke-width:1.4}
-    .top.accent{stroke:${C.amber};stroke-width:2}
-    .face{font-family:${SANS};font-weight:700;fill:${C.chalk};opacity:.92}
-    .leader{fill:none;stroke:${C.steel};stroke-width:1.2;stroke-dasharray:3 4}
-    .dot{fill:${C.amber}}
-    .lname{font:700 24px ${SANS};fill:${C.chalk}}
-    .lwhat{font:400 17px ${SANS};fill:${C.steel}}
-    .beam{stroke:${C.amber};stroke-width:3;stroke-linecap:round;stroke-dasharray:4 10;animation:beam .9s linear infinite}
-    .beamglow{stroke:${C.amber};stroke-width:10;opacity:.12}
-    @keyframes beam{to{stroke-dashoffset:-14}}
-    ${css}
-    @media (prefers-reduced-motion: reduce){.breath,.beam{animation:none!important}}
+    .float{animation:float 6s ease-in-out infinite alternate;animation-delay:${delay}s}
+    @keyframes float{from{transform:translateY(4px)}to{transform:translateY(-6px)}}
+    .ctx{font:600 14px ${SANS};fill:#67E8F9}
+    .ttl{font:700 29px ${SANS};fill:${C.white}}
+    .desc{font:400 16.5px ${SANS};fill:${C.lav}}
+    .chip{fill:rgba(139,92,246,.16);stroke:rgba(196,181,253,.45);stroke-width:1}
+    .chipt{font:500 13px ${SANS};fill:${C.white};text-anchor:middle}
+    .cap{font:500 12px ${SANS};fill:${C.lav};text-anchor:middle;opacity:.85}
+    .orbit{fill:none;stroke:${C.lav};stroke-opacity:.2;stroke-dasharray:3 6}
+    .spoke{stroke:${C.lav};stroke-opacity:.35;stroke-width:1.2}
+    .agent{animation:blink 2.8s ease-in-out infinite}
+    @keyframes blink{0%,100%{opacity:.6}50%{opacity:1}}
+    .win{fill:rgba(18,11,51,.9);stroke:${C.cyan};stroke-width:2}
+    .pipe{stroke:${C.violet};stroke-width:2;stroke-dasharray:4 5;animation:flow 1s linear infinite}
+    .flow{fill:none;stroke:${C.violet};stroke-width:2;stroke-dasharray:4 5;animation:flow 1s linear infinite}
+    @keyframes flow{to{stroke-dashoffset:-9}}
+    .brace{font:700 40px ${MONO};fill:${C.magenta};text-anchor:middle}
+    .check{fill:none;stroke:${C.cyan};stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1 1;animation:tick 2.4s ease-out infinite}
+    @keyframes tick{0%,35%{stroke-dashoffset:1}60%,100%{stroke-dashoffset:0}}
+    .scan{animation:scan 2.6s ease-in-out infinite alternate}
+    @keyframes scan{from{transform:translateY(0)}to{transform:translateY(122px)}}
+    .field{opacity:0;animation:field 4.5s ease-out infinite}
+    @keyframes field{0%{opacity:0;transform:translateX(-8px)}12%,85%{opacity:1;transform:none}100%{opacity:0}}
+    .sweep{animation:sweep 7s ease-in-out infinite;animation-delay:${delay}s}
+    @keyframes sweep{0%,55%{transform:translateX(-260px) skewX(-20deg)}100%{transform:translateX(760px) skewX(-20deg)}}
+    ${reduced('.float,.agent,.pipe,.flow,.check,.scan,.field,.sweep')}
+    @media (prefers-reduced-motion: reduce){.field{opacity:1}}
   </style>
-  <line class="beamglow" x1="${f(busX)}" y1="${f(busTop - 16)}" x2="${f(busX)}" y2="${f(busBottom)}"/>
-  <line class="beam" x1="${f(busX)}" y1="${f(busTop - 16)}" x2="${f(busX)}" y2="${f(busBottom)}"/>
-  ${body}
+  <g class="float">
+    <rect x="10" y="14" width="580" height="350" rx="22" fill="url(#cardBg)"/>
+    <g clip-path="url(#clip)">
+      <circle cx="470" cy="205" r="150" fill="${C.violet}" opacity=".12"/>
+      <rect class="sweep" x="0" y="0" width="160" height="${H}" fill="url(#sweep)"/>
+    </g>
+    <rect x="10" y="14" width="580" height="350" rx="22" fill="none" stroke="url(#holo)" stroke-width="1.6"/>
+    <text x="40" y="58" class="ctx">${esc(context)}</text>
+    ${tl.map((t, i) => `<text x="40" y="${98 + i * 34}" class="ttl">${esc(t)}</text>`).join('')}
+    ${lines.map((l, i) => `<text x="40" y="${descY + i * 25}" class="desc">${esc(l)}</text>`).join('')}
+    ${chipRow(chips, 40, chipY, 330)}
+    <g filter="url(#g)">${visuals[visual](visual === 'doc' ? 452 : 470, 205)}</g>
+  </g>
+</svg>
+`
+}
+
+const cards = [
+  {
+    id: 'vaic', visual: 'vaic', delay: 0, context: 'NXL Technologies', title: 'VAiC',
+    lines: ['Multi-agent platform that evaluates startups:', '8 specialised agents across 15 areas, with', 'retries, timeouts and cited evidence.'],
+    chips: ['Python', 'Pydantic', 'Multi-agent', 'Clean Architecture'],
+  },
+  {
+    id: 'pipes', visual: 'pipes', delay: 1.2, context: 'NXL Technologies', title: 'Pipes',
+    lines: ['Turns websites into structured APIs', 'that AI agents can call, with async', 'workers and signed webhooks.'],
+    chips: ['Job queues', 'PostgreSQL', 'SSRF protection', 'HMAC'],
+  },
+  {
+    id: 'rag', visual: 'rag', delay: 0.6, context: 'Project, 2026', title: 'Medical Knowledge Assistant',
+    lines: ['Agentic RAG with hybrid search and a', 'hallucination guard that checks every', 'answer against its sources.'],
+    chips: ['LangGraph', 'ChromaDB', 'BM25', 'FastAPI'],
+  },
+  {
+    id: 'doc', visual: 'doc', delay: 1.8, context: 'Project, 2026', title: 'Multi-Agent Document Processor',
+    lines: ['Four LangGraph agents classify, extract', 'and validate invoices, resumes and', 'contracts, with confidence scores.'],
+    chips: ['LangGraph', 'Tesseract OCR', 'Groq', 'Docker'],
+  },
+  {
+    id: 'fed', visual: 'fed', delay: 0.9, context: 'Project, 2025', title: 'FedLiteLLMGuard',
+    lines: ['Federated TinyBERT that detects rare', 'attacks on 5G networks without', 'pooling anyone’s raw traffic.'],
+    chips: ['PyTorch', 'TinyBERT', 'Federated learning'],
+  },
+]
+
+// ---------------------------------------------------------------- toolkit: tech orbiting a core in 3D
+function toolkit () {
+  const W = 1200
+  const H = 660
+  const cx = 600; const cy = 370
+  const rings = [
+    { rx: 190, ry: 78, rot: -14, dur: 26, color: C.cyan, items: ['LangGraph', 'LangChain', 'ChromaDB', 'BM25', 'RAG'] },
+    { rx: 340, ry: 150, rot: 9, dur: 38, color: C.violet, items: ['PyTorch', 'Hugging Face', 'TinyBERT', 'Scikit-learn', 'Pandas', 'NumPy'] },
+    { rx: 500, ry: 215, rot: -5, dur: 52, color: C.magenta, items: ['Python', 'FastAPI', 'Pydantic', 'Java', 'SQL', 'PostgreSQL', 'React', 'Docker'] },
+  ]
+  let orbits = ''; let pills = ''
+  rings.forEach((R, ri) => {
+    const p = `M${cx + R.rx} ${cy}A${R.rx} ${R.ry} 0 1 1 ${cx - R.rx} ${cy}A${R.rx} ${R.ry} 0 1 1 ${cx + R.rx} ${cy}`
+    orbits += `<g transform="rotate(${R.rot} ${cx} ${cy})"><path d="${p}" class="orb" stroke="${R.color}"/></g>`
+    R.items.forEach((t, i) => {
+      const off = f((i / R.items.length) * R.dur)
+      const w = textW(t, 15, 0.58) + 28
+      const kt = '0;.25;.5;.75;1'
+      pills += `<g transform="rotate(${R.rot} ${cx} ${cy})"><g>
+        <animateMotion dur="${R.dur}s" begin="-${off}s" repeatCount="indefinite" path="${p}"/>
+        <g transform="rotate(${-R.rot})"><g>
+          <animateTransform attributeName="transform" type="scale" dur="${R.dur}s" begin="-${off}s" repeatCount="indefinite" keyTimes="${kt}" values="1;1.18;1;.78;1" calcMode="spline" keySplines=".4 0 .6 1;.4 0 .6 1;.4 0 .6 1;.4 0 .6 1"/>
+          <animate attributeName="opacity" dur="${R.dur}s" begin="-${off}s" repeatCount="indefinite" keyTimes="${kt}" values=".8;1;.8;.32;.8" calcMode="spline" keySplines=".4 0 .6 1;.4 0 .6 1;.4 0 .6 1;.4 0 .6 1"/>
+          <rect x="${f(-w / 2)}" y="-17" width="${f(w)}" height="34" rx="17" fill="rgba(18,11,51,.92)" stroke="${R.color}" stroke-width="1.5"/>
+          <text y="5.5" class="pill">${t}</text>
+        </g></g>
+      </g></g>`
+    })
+  })
+  return `${svgOpen(W, H, 'Toolkit', 'Technologies orbiting a glowing core: LangGraph, LangChain, ChromaDB, BM25 and RAG closest in; PyTorch, Hugging Face, TinyBERT, Scikit-learn, Pandas and NumPy in the middle; Python, FastAPI, Pydantic, Java, SQL, PostgreSQL, React and Docker on the outside.')}
+  ${spaceBg(W, H, 80)}
+  <defs>
+    <radialGradient id="orb"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#A5F3FC"/><stop offset=".65" stop-color="${C.violet}"/><stop offset="1" stop-color="${C.violet}" stop-opacity="0"/></radialGradient>
+    <filter id="blur" filterUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}"><feGaussianBlur stdDeviation="18"/></filter>
+  </defs>
+  <style>
+    ${starCss}
+    .orb{fill:none;stroke-width:1.2;stroke-opacity:.35;stroke-dasharray:2 7}
+    .pill{font:600 15px ${SANS};fill:${C.white};text-anchor:middle}
+    .core{animation:breathe 4s ease-in-out infinite alternate;transform-origin:${cx}px ${cy}px}
+    @keyframes breathe{from{transform:scale(.92)}to{transform:scale(1.08)}}
+    .lbl{font:700 22px ${SANS};fill:${C.white};text-anchor:middle}
+    .sub{font:400 15px ${SANS};fill:${C.lav};text-anchor:middle}
+    ${reduced('.star,.core')}
+  </style>
+  <text x="${cx}" y="58" class="lbl">What I build with</text>
+  <text x="${cx}" y="84" class="sub">agent frameworks inside, models in the middle, engineering on the outside</text>
+  ${orbits}
+  <g class="core"><circle cx="${cx}" cy="${cy}" r="90" fill="${C.violet}" opacity=".45" filter="url(#blur)"/><circle cx="${cx}" cy="${cy}" r="40" fill="url(#orb)"/></g>
+  ${pills}
+</svg>
+`
+}
+
+// ---------------------------------------------------------------- certifications
+function creds () {
+  const W = 1200
+  const H = 330
+  const items = [
+    ['Amazon Web Services', 'AWS Certified Cloud Practitioner', '2024'],
+    ['Alteryx', 'Designer Core Certified', '2026'],
+    ['NPTEL', 'Google Cloud Computing Foundations', '2024'],
+    ['IIT Madras', 'Artificial Intelligence Workshop', '2024'],
+    ['Paytm Hackathon', 'Top 10 of 40,000 applicants', 'Voice agents'],
+  ]
+  const bw = 368; const bh = 104; const gap = 18
+  let out = ''
+  items.forEach(([who, what, when], i) => {
+    const row = i < 3 ? 0 : 1
+    const inRow = row === 0 ? 3 : 2
+    const col = row === 0 ? i : i - 3
+    const x = (W - (inRow * bw + (inRow - 1) * gap)) / 2 + col * (bw + gap)
+    const y = 96 + row * (bh + gap)
+    out += `<g>
+      <rect x="${f(x)}" y="${y}" width="${bw}" height="${bh}" rx="18" fill="rgba(23,14,64,.85)" stroke="url(#holo)" stroke-width="1.4"/>
+      <g clip-path="url(#c${i})"><rect class="sweep" style="animation-delay:${f(i * 0.7)}s" x="${f(x - 140)}" y="${y}" width="120" height="${bh}" fill="url(#sweep)"/></g>
+      <clipPath id="c${i}"><rect x="${f(x)}" y="${y}" width="${bw}" height="${bh}" rx="18"/></clipPath>
+      <text x="${f(x + 24)}" y="${y + 36}" class="who">${esc(who)}</text>
+      <text x="${f(x + bw - 24)}" y="${y + 36}" class="when">${esc(when)}</text>
+      <text x="${f(x + 24)}" y="${y + 72}" class="what" style="font-size:${f(Math.min(19, 318 / (what.length * 0.56)))}px">${esc(what)}</text>
+    </g>`
+  })
+  return `${svgOpen(W, H, 'Certifications and achievements', items.map(i => i.join(', ')).join('; '))}
+  ${spaceBg(W, H, 50)}
+  <defs>
+    <linearGradient id="holo" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${W}" y2="${H}">
+      <stop offset="0" stop-color="${C.cyan}"/><stop offset=".5" stop-color="${C.violet}"/><stop offset="1" stop-color="${C.magenta}"/>
+      <animateTransform attributeName="gradientTransform" type="rotate" from="0 600 165" to="360 600 165" dur="14s" repeatCount="indefinite"/>
+    </linearGradient>
+    <linearGradient id="sweep" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  </defs>
+  <style>
+    ${starCss}
+    .lbl{font:700 22px ${SANS};fill:${C.white};text-anchor:middle}
+    .who{font:600 14px ${SANS};fill:#67E8F9}
+    .when{font:500 14px ${SANS};fill:${C.lav};text-anchor:end}
+    .what{font:700 19px ${SANS};fill:${C.white}}
+    .sweep{animation:sw 6s ease-in-out infinite}
+    @keyframes sw{0%,60%{transform:translateX(0)}100%{transform:translateX(560px)}}
+    ${reduced('.star,.sweep')}
+  </style>
+  <text x="600" y="58" class="lbl">Certifications and wins</text>
+  ${out}
+</svg>
+`
+}
+
+// ---------------------------------------------------------------- LinkedIn button
+function linkedin () {
+  const W = 420
+  const H = 84
+  return `${svgOpen(W, H, 'Connect on LinkedIn', 'Button linking to Kiran D on LinkedIn')}
+  <defs>
+    <linearGradient id="holo" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${W}" y2="0">
+      <stop offset="0" stop-color="${C.cyan}"/><stop offset=".5" stop-color="${C.violet}"/><stop offset="1" stop-color="${C.magenta}"/>
+      <animateTransform attributeName="gradientTransform" type="translate" values="-140 0;140 0;-140 0" dur="6s" repeatCount="indefinite"/>
+    </linearGradient>
+    <filter id="g" filterUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}"><feGaussianBlur stdDeviation="7"/></filter>
+  </defs>
+  <style>
+    .glow{animation:pulse 2.6s ease-in-out infinite alternate}
+    @keyframes pulse{from{opacity:.25}to{opacity:.7}}
+    .t{font:700 22px ${SANS};fill:${C.white}}
+    ${reduced('.glow')}
+  </style>
+  <rect class="glow" x="14" y="14" width="${W - 28}" height="${H - 28}" rx="28" fill="url(#holo)" filter="url(#g)"/>
+  <rect x="12" y="12" width="${W - 24}" height="${H - 24}" rx="30" fill="#0E0930" stroke="url(#holo)" stroke-width="2"/>
+  <rect x="32" y="24" width="36" height="36" rx="8" fill="#0A66C2"/>
+  <text x="50" y="50" style="font:800 21px ${SANS};fill:#fff;text-anchor:middle">in</text>
+  <text x="86" y="50" class="t">Connect on LinkedIn</text>
 </svg>
 `
 }
 
 const out = path.join(__dirname, '..', 'assets')
 fs.mkdirSync(out, { recursive: true })
-fs.writeFileSync(path.join(out, 'hero.svg'), hero())
-fs.writeFileSync(path.join(out, 'stack.svg'), stack())
-console.log('wrote assets/hero.svg and assets/stack.svg')
+for (const old of ['stack.svg']) fs.rmSync(path.join(out, old), { force: true })
+const write = (name, s) => { fs.writeFileSync(path.join(out, name), s); console.log(`${name.padEnd(16)} ${(s.length / 1024).toFixed(1)} KB`) }
+write('hero.svg', hero())
+for (const c of cards) write(`card-${c.id}.svg`, card(c))
+write('toolkit.svg', toolkit())
+write('creds.svg', creds())
+write('linkedin.svg', linkedin())
