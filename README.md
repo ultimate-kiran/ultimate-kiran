@@ -25,10 +25,6 @@
   <a href="https://github.com/ultimate-kiran/Multi_agent_document_processor" title="Open Multi-Agent Document Processor on GitHub"><img src="assets/card-doc.svg" width="49%" title="Open Multi-Agent Document Processor on GitHub" alt="Multi-Agent Document Processor: four LangGraph agents classify, extract and validate documents." /></a>
 </p>
 
-<div align="center">
-<details>
-<summary><picture><img src="assets/btn-more-ai.svg" height="64" title="Click to show 3 more AI projects" alt="Show 3 more AI projects" /></picture></summary>
-<br/>
 <p align="center">
   <a href="https://github.com/ultimate-kiran/image_and_prompt_to_image_generator_ai_project" title="Open AI Image Redesign Studio on GitHub"><img src="assets/card-image.svg" width="49%" title="Open AI Image Redesign Studio on GitHub" alt="AI Image Redesign Studio: redesigns images from a prompt, with progress tracking and ZIP downloads." /></a>
   <a href="https://github.com/ultimate-kiran/pdf_chatbot" title="Open PDF Chatbot on GitHub"><img src="assets/card-pdf.svg" width="49%" title="Open PDF Chatbot on GitHub" alt="PDF Chatbot: ask questions about a PDF, answered with LangChain and Groq." /></a>
@@ -36,8 +32,6 @@
 <p align="center">
   <img src="assets/card-fed.svg" width="49%" title="FedLiteLLMGuard: research project, 2025" alt="FedLiteLLMGuard: federated TinyBERT that detects rare attacks on 5G networks." />
 </p>
-</details>
-</div>
 
 <div align="center">
 <details>
